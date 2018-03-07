@@ -192,14 +192,15 @@ function main() {
 
   const drawList = links.map((link)=>link);
 
-
-  httpRequest("127.0.0.1:8002","GET","",(request)=>{
-    let response = JSON.parse(request.responseText);
-    links.forEach((link)=>{
-      link.update(response[link.id]);
+  window.setInterval(()=>{
+    httpRequest("127.0.0.1:8002","GET","",(request)=>{
+      let response = JSON.parse(request.responseText);
+      links.forEach((link)=>{
+        link.update(response[link.id]);
+      });
+      draw(gl,programInfo,drawList);
     });
-    draw(gl,programInfo,drawList);
-  });
+  },500);
 
   // var then = 0;
   // var totalTime = 0;

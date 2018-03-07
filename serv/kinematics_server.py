@@ -3,10 +3,12 @@ import HTTPComputeNode
 import sys
 import json
 import numpy as np
+import time
 
 class KinematicsProcessor:
   def __init__(self,start_configuration):
     self.joint_configuration = start_configuration
+    self.ts = time.time()
     pass
 
   def processors(self):
@@ -24,7 +26,11 @@ class KinematicsProcessor:
       wfile.write("content-type not recognized")
 
   def get_processor(self,content_type,wfile):
-    wfile.write(json.dumps(joint_configuration))
+    delta = (self.ts - time.time()) / 100.0 #ms
+    print(delta)
+    self.ts = time.time()
+    self.joint_configuration["joint1"] = self.joint_configuration["joint1"] + delta
+    wfile.write(json.dumps(self.joint_configuration))
 
 if __name__ == "__main__":
   PORT = int(sys.argv[1])
