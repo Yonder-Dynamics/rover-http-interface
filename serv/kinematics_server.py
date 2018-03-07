@@ -13,8 +13,12 @@ class KinematicsProcessor:
 
   def processors(self):
     return {
-      "get_processor":self.get_processor,
-      "post_processor":self.post_processor,
+      "get":{
+        "processor":self.get_processor,
+      },
+      "post":{
+        "processor":self.post_processor,
+      },
     }
 
   def post_processor(self,content_type,payload,wfile):

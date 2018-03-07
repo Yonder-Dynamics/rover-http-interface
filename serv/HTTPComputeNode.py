@@ -24,7 +24,7 @@ class ComputeNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     # send the content-type,query string, and stream to processor object
     content_type = self.headers.getheader('content-type',None);
-    self.server.controller_args['post_processor'](content_type,payload,self.wfile)
+    self.server.controller_args['post']['processor'](content_type,payload,self.wfile)
 
   def do_GET(self):
     self.send_response(200,"OK")
@@ -33,7 +33,7 @@ class ComputeNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     # send the content-type,query string, and stream to processor object
     content_type = self.headers.getheader('content-type',None);
-    self.server.controller_args['get_processor'](content_type,self.wfile)
+    self.server.controller_args['get']['processor'](content_type,self.wfile)
 
   def do_OPTIONS(self):
     self.send_response(200,"OK")
