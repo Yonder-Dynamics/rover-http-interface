@@ -4,6 +4,7 @@ import sys
 import json
 import numpy as np
 import time
+import solve_kinematics
 
 class KinematicsProcessor:
   def __init__(self,start_configuration):

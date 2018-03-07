@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 import numpy as np
 import math
-import tensorflow as tf
+# import tensorflow as tf
 
 
 def forward_kinematics_4(lengths,thetas,joint=None):
@@ -51,6 +51,8 @@ def jacobian_4(lengths,thetas):
     return np.matrix([x,y,z])
 
 def generate_path(start,end,steps_per_unit):
+    start = np.array(start)
+    end = np.array(end)
     diff = end - start
     steps = int(np.linalg.norm(diff)*steps_per_unit)+1
     u_diff = diff / float(steps)
@@ -87,7 +89,7 @@ def inverse_kinematics_numerical(lengths,thetas,adjust,
             diff = wp-npos
         yield thetas
 
-
+"""
 #generates tensorflow dataflows for kinematics calculations
 class arm_3_planar_1_base:
     def __init__(self,base_length,lengths):
@@ -188,3 +190,4 @@ def inverse_kinematics_lagrangian(solver,tf_arm,tf_criterion):
 
 
     pass
+"""

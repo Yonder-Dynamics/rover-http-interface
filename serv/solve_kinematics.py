@@ -1,11 +1,48 @@
 #! /usr/bin/env python
 import numpy as np
 import math
-# import tensorflow as tf
 import time
 import ikpy
 
-import kinematics_math        
+import kinematics_math   
+
+class KinematicSolver:
+    def __init__(self):
+        links = [
+            ikpy.link.URDFLink(
+                name="rotational_base",
+                translation_vector=np.array([0,0,0]),
+                orientation=np.array([0,0,0]),
+                rotation=np.array([0,0,1])),
+            ikpy.link.URDFLink(
+                name="base_joint",
+                translation_vector=np.array([0,0,0]),
+                orientation=np.array([0,0,0]),
+                rotation=np.array([0,1,0])),
+            ikpy.link.URDFLink(
+                name="to_elbow",
+                translation_vector=np.array([1,0,0]),
+                orientation=np.array([0,0,0]),
+                rotation=np.array([0,1,0])),
+            ikpy.link.URDFLink(
+                name="to_wrist",
+                translation_vector=np.array([1,0,0]),
+                orientation=np.array([0,0,0]),
+                rotation=np.array([0,1,0])),
+            ikpy.link.URDFLink(
+                name="to_manipulator",
+                translation_vector=np.array([1,0,0]),
+                orientation=np.array([0,0,0]),
+                rotation=np.array([0,1,0])),
+        ]
+
+        self.chain = ikpy.chain.Chain(links)
+
+    def generate_path_to_point(self,start,end,step_size=10):
+        path = kinematics_math.make_translation_matrix(kinematics_math.generate_path(start,end,step_size))
+        for wp in path:
+            yield chain.inverse_kinematics(wp,np.array(ik))
+
 
 if __name__ == "__main__":
     PI = math.pi
