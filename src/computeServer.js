@@ -4,14 +4,13 @@ var computeAddress = "127.0.0.1";
 var inputElem = document.getElementById("compute-node-input")
 inputElem.placeholder = computeAddress;
 
-function httpRequest(addr,method,data,callback){
+function httpRequest(addr,method,data,callbacks){
   const shouldBeAsync = true;
 
   const request = new XMLHttpRequest();
 
-  request.onload = function () {
-     callback(request);
-  }
+  request.onload = ()=>callbacks.onload(request);
+  request.onerror = ()=>callbacks.onerror(request);
 
   request.open(method, "http://"+addr, shouldBeAsync);
 

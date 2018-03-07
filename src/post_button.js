@@ -25,4 +25,4 @@ function postFunction(){
   request.send(postData);
 }
 
-document.getElementById("post_button").onclick = postFunction;
+// document.getElementById("post_button").onclick = postFunction;

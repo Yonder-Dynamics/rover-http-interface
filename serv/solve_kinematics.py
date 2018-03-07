@@ -43,6 +43,9 @@ class KinematicSolver:
         for wp in path:
             yield chain.inverse_kinematics(wp,np.array(ik))
 
+    def end_affector(self,configuration):
+        return 0
+
 
 if __name__ == "__main__":
     PI = math.pi
