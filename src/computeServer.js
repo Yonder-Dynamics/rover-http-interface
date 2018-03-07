@@ -15,8 +15,8 @@ function httpRequest(addr,method,data,callback){
 
   request.open(method, "http://"+addr, shouldBeAsync);
 
-  // request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-  request.setRequestHeader("goalv", "hello world");
+  request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  // request.setRequestHeader("goalv", "hello world");
 
   // Actually sends the request to the server.
   request.send(data);
@@ -38,7 +38,7 @@ function setLocalComputeAddress(e){
 
     if(verifyAddress(inputElem.value)){
         computeAddress = inputElem.value;
-        httpRequest(computeAddress,"GET","some data",(request)=>{
+        httpRequest(computeAddress,"POST",JSON.stringify({test:"test"}),(request)=>{
           console.log(request.status);
           console.log(request.responseText);
         });
@@ -46,6 +46,8 @@ function setLocalComputeAddress(e){
 }
 
 
-addressForm = document.getElementById("compute-node-form");
-    addressForm.onsubmit = setLocalComputeAddress;
+const addressForm = document.getElementById("compute-node-form");
+addressForm.onsubmit = setLocalComputeAddress;
+
+export {httpRequest};
 

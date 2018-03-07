@@ -6,6 +6,7 @@
  */
 import {mat4,vec4} from 'gl-matrix';
 import {Link} from './link.js';
+import {httpRequest} from './computeServer.js';
 
 import vsSource from './basic-vertex-shader.vs';
 import fsSource from './basic-frag-shader.fs';
@@ -57,7 +58,7 @@ function loadShader(gl, type, source) {
   return shader;
 }
 
-function draw(gl,programInfo,drawList,deltaTime){
+function draw(gl,programInfo,drawList){
   gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
   gl.clearDepth(1.0);                 // Clear everything
   gl.enable(gl.DEPTH_TEST);           // Enable depth testing
@@ -150,91 +151,102 @@ function main() {
   };
 
   const base_joint0 = {angle:0,axis:[0,1,0]};
-  const base0 = new Link(0,0,base_joint0,base_link);
+  const base0 = new Link("base0",0,0,base_joint0,base_link);
   base0.build(gl,shaderProgram);
 
   const joint0 = {angle:3.1415/4,axis:[0,0,1]};
-  const link0 = new Link(4,1,joint0,base0);
+  const link0 = new Link("joint0",4,1,joint0,base0);
   link0.build(gl,shaderProgram);
 
   const joint1 = {angle:-3.1415/4,axis:[0,0,1]};
-  const link1 = new Link(4,1,joint1,link0);
+  const link1 = new Link("joint1",4,1,joint1,link0);
   link1.build(gl,shaderProgram);
 
   const joint2 = {angle:-3.1415/4,axis:[0,0,1]};
-  const link2 = new Link(4,1,joint2,link1);
+  const link2 = new Link("joint2",4,1,joint2,link1);
   link2.build(gl,shaderProgram);
 
   const knuckle00 = {angle:-3.1415/3,axis:[0,0,1]};
-  const finger00 = new Link(1,0.5,knuckle00,link2);
+  const finger00 = new Link("finger00",1,0.5,knuckle00,link2);
   finger00.build(gl,shaderProgram);
 
   const knuckle01 = {angle:3.1415/3,axis:[0,0,1]};
-  const finger01 = new Link(1,0.5,knuckle01,finger00);
+  const finger01 = new Link("finger01",1,0.5,knuckle01,finger00);
   finger01.build(gl,shaderProgram);
 
   const knuckle10 = {angle:3.1415/3,axis:[0,0,1]};
-  const finger10 = new Link(1,0.5,knuckle10,link2);
+  const finger10 = new Link("finger10",1,0.5,knuckle10,link2);
   finger10.build(gl,shaderProgram);
 
   const knuckle11 = {angle:-3.1415/3,axis:[0,0,1]};
-  const finger11 = new Link(1,0.5,knuckle11,finger10);
+  const finger11 = new Link("finger11",1,0.5,knuckle11,finger10);
   finger11.build(gl,shaderProgram);
 
 
-  const drawList = [
+  const links = [
     base0,
     link0,link1,link2,
     finger00,finger01,
     finger10,finger11,
   ];
 
-  var then = 0;
-  var totalTime = 0;
-  // Draw the scene repeatedly
-  function render(now) {
-    now *= 0.001;  // convert to seconds
-    const deltaTime = now - then;
-    then = now;
+  const drawList = links.map((link)=>link);
 
-    draw(gl,programInfo,drawList,deltaTime);
-    totalTime += deltaTime;
 
-    if(keys.q){
-      link0.move(deltaTime);
-    } else if(keys.a){
-      link0.move(-deltaTime);
-    }
+  httpRequest("127.0.0.1:8002","GET","",(request)=>{
+    let response = JSON.parse(request.responseText);
+    links.forEach((link)=>{
+      link.update(response[link.id]);
+    });
+    draw(gl,programInfo,drawList);
+  });
 
-    if(keys.w){
-      link1.move(deltaTime);
-    } else if(keys.s){
-      link1.move(-deltaTime);
-    }
+  // var then = 0;
+  // var totalTime = 0;
+  // // Draw the scene repeatedly
+  // function render(now) {
+  //   now *= 0.001;  // convert to seconds
+  //   const deltaTime = now - then;
+  //   then = now;
 
-    if(keys.e){
-      link2.move(deltaTime);
-    } else if(keys.d){
-      link2.move(-deltaTime);
-    }
+  //   draw(gl,programInfo,drawList);
+  //   totalTime += deltaTime;
 
-    if(keys.z){
-      base0.move(-deltaTime);
-    } else if(keys.c){
-      base0.move(deltaTime);
-    }
+  //   if(keys.q){
+  //     link0.move(deltaTime);
+  //   } else if(keys.a){
+  //     link0.move(-deltaTime);
+  //   }
 
-    if(keys[' ']&&knuckle00.angle < -3.1415/5){
-      finger00.move(deltaTime);
-      finger10.move(-deltaTime);
-    } else if(!keys[' ']&&knuckle00.angle > -3.1415/3){
-      finger00.move(-deltaTime);
-      finger10.move(+deltaTime);
-    }
+  //   if(keys.w){
+  //     link1.move(deltaTime);
+  //   } else if(keys.s){
+  //     link1.move(-deltaTime);
+  //   }
 
-    requestAnimationFrame(render);
-  }
-  requestAnimationFrame(render);
+  //   if(keys.e){
+  //     link2.move(deltaTime);
+  //   } else if(keys.d){
+  //     link2.move(-deltaTime);
+  //   }
+
+  //   if(keys.z){
+  //     base0.move(-deltaTime);
+  //   } else if(keys.c){
+  //     base0.move(deltaTime);
+  //   }
+
+  //   if(keys[' ']&&knuckle00.angle < -3.1415/5){
+  //     finger00.move(deltaTime);
+  //     finger10.move(-deltaTime);
+  //   } else if(!keys[' ']&&knuckle00.angle > -3.1415/3){
+  //     finger00.move(-deltaTime);
+  //     finger10.move(+deltaTime);
+  //   }
+
+  //   requestAnimationFrame(render);
+  // }
+  // requestAnimationFrame(render);
 }
 
 var keys;

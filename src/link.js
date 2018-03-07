@@ -8,7 +8,8 @@ import {mat4} from 'gl-matrix';
 import {Cubic} from './cubic.js';
 
 class Link{
-  constructor(length,width,joint,parent){
+  constructor(id,length,width,joint,parent){
+    this.id = id;
     this.wireframe = new Cubic(length,width,width);
     this.uniforms = {};
     this.parent = parent;
