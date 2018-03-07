@@ -4,13 +4,13 @@ import sys
 import json
 import numpy as np
 import time
-import solve_kinematics
+from KinematicModel import KinematicModel
+from threading import Thread
 
 class KinematicsProcessor:
-  def __init__(self,start_configuration):
-    self.joint_configuration = start_configuration
-    self.ts = time.time()
-    pass
+  def __init__(self,start_configuration,joint_map,precision=0.001):
+    self.model = KinematicModel(start_configuration,joint_map,precision)
+    self.running = lambda: True
 
   def processors(self):
     return {
@@ -25,17 +25,30 @@ class KinematicsProcessor:
   def post_processor(self,content_type,payload,wfile):
     if "application/json" in content_type:
       payload = json.loads(payload)
-      print(payload)
-      wfile.write(json.dumps(payload))
+      # now parse the payload
+      if "goal" in payload:
+        self.model.goal(payload["goal"])
     else:
       wfile.write("content-type not recognized")
 
   def get_processor(self,content_type,wfile):
-    delta = (self.ts - time.time()) / 100.0 #ms
-    print(delta)
-    self.ts = time.time()
-    self.joint_configuration["joint1"] = self.joint_configuration["joint1"] + delta
-    wfile.write(json.dumps(self.joint_configuration))
+    wfile.write(json.dumps(self.model.configuration))
+
+  def start(self):
+    thread = Thread(group=None,target=self.update_configuration)
+    thread.start()
+    return thread
+
+  def update_configuration(self):
+    while self.running():
+      if not self.model.configured():
+        self.model.update()
+    print("Processing thread closing...")
+
+  def kill(self):
+    self.running = lambda: False
+
+
 
 if __name__ == "__main__":
   PORT = int(sys.argv[1])
@@ -50,8 +63,15 @@ if __name__ == "__main__":
     "finger10":np.pi/3,"finger11":-np.pi/3,
   }
 
-  kp = KinematicsProcessor(start_configuration)
+  joint_map = {}
+
+  kp = KinematicsProcessor(start_configuration,joint_map)
 
   node = HTTPComputeNode.ComputeNode(("",PORT),kp.processors())
   print(node.server_address)
+
+  kp.running = node.running
+
+  thread0 = kp.start()
   node.start()
+  kp.kill() # kill the processing thread if the server goes down

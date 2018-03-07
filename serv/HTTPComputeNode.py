@@ -47,11 +47,17 @@ class ComputeNode(SocketServer.TCPServer):
   def __init__(self,server_address,controller_args={},bind_and_activate=True):
     SocketServer.TCPServer.__init__(self,server_address,ComputeNodeAPI,bind_and_activate)
     self.controller_args = controller_args
+    self.is_live = True
 
   def start(self):
     try:
+      is_live = True
       self.serve_forever()
     except KeyboardInterrupt:
       print("\nShutting down server...")
-      self.shutdown();
-      self.server_close();
+      self.shutdown()
+      self.server_close()
+      is_live = False
+
+  def running(self):
+    return self.is_live
