@@ -1,7 +1,7 @@
 
-var computeAddress = "127.0.0.1";
+var computeAddress = "127.0.0.1:8002";
 
-var inputElem = document.getElementById("compute-node-input")
+const inputElem = document.getElementById("compute-node-input")
 inputElem.placeholder = computeAddress;
 
 function httpRequest(addr,method,data,callbacks){
@@ -37,16 +37,58 @@ function setLocalComputeAddress(e){
 
     if(verifyAddress(inputElem.value)){
         computeAddress = inputElem.value;
-        httpRequest(computeAddress,"POST",JSON.stringify({test:"test"}),(request)=>{
-          console.log(request.status);
-          console.log(request.responseText);
-        });
+        // httpRequest(computeAddress,"POST",JSON.stringify({test:"test"}),(request)=>{
+        //   console.log(request.status);
+        //   console.log(request.responseText);
+        // });
     }
+}
+
+function requestNewPosition(e){
+  e.stopPropagation();
+  e.preventDefault();
+  let x = document.getElementById("request-x").value;
+  let y = document.getElementById("request-y").value;
+  let z = document.getElementById("request-z").value;
+
+  let request = {
+    "action":"set_goal",
+    "data":[+x,+y,+z],
+  }
+
+  const callbacks = {
+    onload: (_request)=>{},
+    onerror:(_request)=>{console.error(_request);},
+  }
+
+  httpRequest(computeAddress,"POST",JSON.stringify(request),callbacks);
+
+}
+
+function resetConfiguration(e){
+  e.stopPropagation();
+  e.preventDefault();
+  let request = {
+    "action":"reset",
+  }
+
+  const callbacks = {
+    onload: (_request)=>{},
+    onerror:(_request)=>{console.error(_request);},
+  }
+
+  httpRequest(computeAddress,"POST",JSON.stringify(request),callbacks);
 }
 
 
 const addressForm = document.getElementById("compute-node-form");
-addressForm.onsubmit = setLocalComputeAddress;
+addressForm.onclick = setLocalComputeAddress;
+
+const requestForm = document.getElementById("compute-node-request");
+requestForm.onclick = requestNewPosition;
+
+const resetButton = document.getElementById("compute-node-reset");
+resetButton.onclick = resetConfiguration;
 
 export {httpRequest};
 

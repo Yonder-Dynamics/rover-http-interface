@@ -194,12 +194,15 @@ function main() {
 
   var active = true;
 
+  const statusText = document.getElementById("status-text");
+
   const requestCallbacks = {
     "onload":(request)=>{
         let response = JSON.parse(request.responseText);
         links.forEach((link)=>{
           link.update(response[link.id]);
         });
+        statusText.innerHTML = request.responseText;
         draw(gl,programInfo,drawList);
       },
     "onerror":(error)=>{
@@ -211,9 +214,10 @@ function main() {
     if(active){
       httpRequest("127.0.0.1:8002","GET","",requestCallbacks);
     }
-  },500);
+  },100);
 
   document.getElementById("reload-connection").onclick = ()=>{active = true;};
+
 
   // var then = 0;
   // var totalTime = 0;

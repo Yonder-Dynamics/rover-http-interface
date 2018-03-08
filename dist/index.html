@@ -8,16 +8,24 @@
     <h1>
       Rover Control Panel
     </h1>
-    <div>
-      <button id="reload-connection">Reload</button>
-    </div>
     <canvas id="glCanvas" width="640" height="480"></canvas>
     <div>
-      <form id="compute-node-form">
+      <span id="status-text"></span>
+    </div>
+      <div>
         Local Compute Node:
         <input type="text" id="compute-node-input">
-        <button>Set</button>
-      </form>
+        <button id="compute-node-form">Set</button>
+        <button id="reload-connection">Reload</button>
+      </div>
+      <div>
+        Configuration:
+        <input type="text" id="request-x" autocomplete="off"/>
+        <input type="text" id="request-y" autocomplete="off"/>
+        <input type="text" id="request-z" autocomplete="off"/>
+        <button id="compute-node-request">Request</button>
+        <button id="compute-node-reset">Reset</button>
+      </div>
     </div>
     <script src="bundle.js"></script>
   </body>

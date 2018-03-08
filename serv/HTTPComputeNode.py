@@ -42,6 +42,9 @@ class ComputeNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
     self.send_header("Access-Control-Allow-Headers","content-type,goalv")
     self.send_header("Access-Control-Allow-Methods","POST,GET")
 
+  def log_request(self,format,*args):
+    pass
+
 
 class ComputeNode(SocketServer.TCPServer):
   def __init__(self,server_address,controller_args={},bind_and_activate=True):

@@ -38,13 +38,22 @@ class KinematicSolver:
 
         self.chain = ikpy.chain.Chain(links)
 
-    def generate_path_to_point(self,start,end,step_size=10):
-        path = kinematics_math.make_translation_matrix(kinematics_math.generate_path(start,end,step_size))
+    def generate_path_to_point(self,start_config,end_position,step_size=10):
+        path = kinematics_math.make_translation_matrix(
+                    kinematics_math.generate_path(
+                        self.ee_translation(start_config),
+                        end_position,
+                        step_size))
+        ik = start_config
         for wp in path:
-            yield chain.inverse_kinematics(wp,np.array(ik))
+            ik = self.chain.inverse_kinematics(wp,np.array(ik))
+            yield ik
 
     def end_affector(self,configuration):
-        return 0
+        return self.chain.forward_kinematics(configuration)
+
+    def ee_translation(self,configuration):
+        return self.end_affector(configuration)[:,3][0:3]
 
 
 if __name__ == "__main__":

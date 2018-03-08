@@ -26,8 +26,11 @@ class KinematicsProcessor:
     if "application/json" in content_type:
       payload = json.loads(payload)
       # now parse the payload
-      if "goal" in payload:
-        self.model.goal(payload["goal"])
+      if "set_goal" in payload['action']:
+        print("setting goal to: {}".format(payload['data']))
+        self.model.set_goal(payload["data"])
+      elif "reset" in payload['action']:
+        self.model.reset()
     else:
       wfile.write("content-type not recognized")
 
@@ -40,9 +43,13 @@ class KinematicsProcessor:
     return thread
 
   def update_configuration(self):
+    last_print = 0
     while self.running():
       if not self.model.configured():
         self.model.update()
+      # if time.time() - last_print > 1:
+      #   last_print = time.time()
+      #   print(self.model.end_affector)
     print("Processing thread closing...")
 
   def kill(self):
@@ -56,14 +63,19 @@ if __name__ == "__main__":
 
   start_configuration = {
     "base0":0,
-    "joint0":np.pi/4,
-    "joint1":-np.pi/4,
-    "joint2":-np.pi/4,
+    "joint0":np.pi/2,
+    "joint1":-np.pi/2,
+    "joint2":-np.pi/2,
     "finger00":-np.pi/3,"finger01":np.pi/3,
     "finger10":np.pi/3,"finger11":-np.pi/3,
   }
 
-  joint_map = {}
+  joint_map = [
+    "base0",
+    "joint0",
+    "joint1",
+    "joint2"
+  ]
 
   kp = KinematicsProcessor(start_configuration,joint_map)
 
