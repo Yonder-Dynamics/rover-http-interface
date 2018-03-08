@@ -8,32 +8,37 @@ import kinematics_math
 
 class KinematicSolver:
     def __init__(self):
+        # coordinate system
+        # 0-config should lie along x axis
+        # y -z
+        # |/
+        # -- x
         links = [
             ikpy.link.URDFLink(
                 name="rotational_base",
                 translation_vector=np.array([0,0,0]),
                 orientation=np.array([0,0,0]),
-                rotation=np.array([0,0,1])),
+                rotation=np.array([0,1,0])),
             ikpy.link.URDFLink(
                 name="base_joint",
                 translation_vector=np.array([0,0,0]),
                 orientation=np.array([0,0,0]),
-                rotation=np.array([0,1,0])),
+                rotation=np.array([0,0,1])),
             ikpy.link.URDFLink(
                 name="to_elbow",
                 translation_vector=np.array([1,0,0]),
                 orientation=np.array([0,0,0]),
-                rotation=np.array([0,1,0])),
+                rotation=np.array([0,0,1])),
             ikpy.link.URDFLink(
                 name="to_wrist",
                 translation_vector=np.array([1,0,0]),
                 orientation=np.array([0,0,0]),
-                rotation=np.array([0,1,0])),
+                rotation=np.array([0,0,1])),
             ikpy.link.URDFLink(
                 name="to_manipulator",
                 translation_vector=np.array([1,0,0]),
                 orientation=np.array([0,0,0]),
-                rotation=np.array([0,1,0])),
+                rotation=np.array([0,0,1])),
         ]
 
         self.chain = ikpy.chain.Chain(links)

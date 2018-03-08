@@ -7,7 +7,7 @@ import time
 import signal
 import json
 
-class ComputeNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
+class ControlNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
   def __init__(self,request,client_address,server):
     SimpleHTTPServer.SimpleHTTPRequestHandler.__init__(self,request,client_address,server)
 
@@ -33,7 +33,7 @@ class ComputeNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     # send the content-type,query string, and stream to processor object
     content_type = self.headers.getheader('content-type',None);
-    self.server.controller_args['get']['processor'](content_type,self.wfile)
+    self.server.controller_args['get']['processor'](self.path,content_type,self.wfile)
 
   def do_OPTIONS(self):
     self.send_response(200,"OK")
@@ -46,9 +46,9 @@ class ComputeNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
     pass
 
 
-class ComputeNode(SocketServer.TCPServer):
+class ControlNode(SocketServer.TCPServer):
   def __init__(self,server_address,controller_args={},bind_and_activate=True):
-    SocketServer.TCPServer.__init__(self,server_address,ComputeNodeAPI,bind_and_activate)
+    SocketServer.TCPServer.__init__(self,server_address,ControlNodeAPI,bind_and_activate)
     self.controller_args = controller_args
     self.is_live = True
 

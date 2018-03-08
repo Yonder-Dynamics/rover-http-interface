@@ -7,7 +7,17 @@ import time
 from KinematicModel import KinematicModel
 from threading import Thread
 
-class KinematicsProcessor:
+# kinematics serving and control API
+# GET: specified
+#   -- /status: get the rover status (currently just the simulated arm)
+#   -- (planned) /params: get rover constants like dimensions, etc. 
+#   -- 
+# POST: specified by the json payload attributes "action" and "data"
+#   -- set_goal: set an xyz target location to move the manipulator to
+#   -- reset: reset the arm to a safe default configuration
+#   --
+
+class ControlProcessor:
   def __init__(self,start_configuration,joint_map,precision=0.001):
     self.model = KinematicModel(start_configuration,joint_map,precision)
     self.running = lambda: True
@@ -34,8 +44,9 @@ class KinematicsProcessor:
     else:
       wfile.write("content-type not recognized")
 
-  def get_processor(self,content_type,wfile):
-    wfile.write(json.dumps(self.model.configuration))
+  def get_processor(self,path,content_type,wfile):
+    if path == "/status":
+      wfile.write(json.dumps(self.model.configuration))
 
   def start(self):
     thread = Thread(group=None,target=self.update_configuration)
@@ -77,13 +88,13 @@ if __name__ == "__main__":
     "joint2"
   ]
 
-  kp = KinematicsProcessor(start_configuration,joint_map)
+  processor = ControlProcessor(start_configuration,joint_map)
 
-  node = HTTPComputeNode.ComputeNode(("",PORT),kp.processors())
+  node = HTTPComputeNode.ControlNode(("",PORT),processor.processors())
   print(node.server_address)
 
-  kp.running = node.running
+  processor.running = node.running
 
-  thread0 = kp.start()
+  thread0 = processor.start()
   node.start()
-  kp.kill() # kill the processing thread if the server goes down
+  processor.kill() # kill the processing thread if the server goes down

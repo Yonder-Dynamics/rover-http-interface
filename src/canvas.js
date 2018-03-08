@@ -4,12 +4,15 @@
  * 
  * Author: Alex Haggart
  */
-import {mat4,vec4} from 'gl-matrix';
+import {mat4,vec4,vec3} from 'gl-matrix';
 import {Link} from './link.js';
 import {httpRequest} from './computeServer.js';
+import {TransformLink} from './TransformLink.js';
 
 import vsSource from './basic-vertex-shader.vs';
 import fsSource from './basic-frag-shader.fs';
+
+const PI = 3.14159265359
 
 //
 // Initialize a shader program, so WebGL knows how to draw our data
@@ -58,17 +61,7 @@ function loadShader(gl, type, source) {
   return shader;
 }
 
-function draw(gl,programInfo,drawList){
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-  gl.clearDepth(1.0);                 // Clear everything
-  gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-  gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
-
-  // Clear the canvas before we start drawing on it.
-
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  //TODO: this should probably go somewhere else, since it is static
+function makePerspectiveMatrix(gl){
   // Create a perspective matrix, a special matrix that is
   // used to simulate the distortion of perspective in a camera.
   // Our field of view is 45 degrees, with a width/height
@@ -90,6 +83,19 @@ function draw(gl,programInfo,drawList){
                    zNear,
                    zFar);
 
+  return projectionMatrix;
+}
+
+function draw(gl,programInfo,drawList,projection){
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
+  gl.clearDepth(1.0);                 // Clear everything
+  gl.enable(gl.DEPTH_TEST);           // Enable depth testing
+  gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
+
+  // Clear the canvas before we start drawing on it.
+
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
   // Tell WebGL to use our program when drawing
   gl.useProgram(programInfo.program);
 
@@ -98,7 +104,7 @@ function draw(gl,programInfo,drawList){
   gl.uniformMatrix4fv(
       programInfo.uniformLocations.projectionMatrix,
       false,
-      projectionMatrix);
+      projection);
 
   drawList.forEach((obj)=>obj.draw(gl));
 }
@@ -142,43 +148,42 @@ function main() {
     },
   };
 
-  const base_transform = mat4.create();
-  mat4.translate(base_transform,base_transform,[-5,0.0,-20.0])
+  const projectionMatrix = makePerspectiveMatrix(gl);
 
-  const base_link = {
-    getTransform:()=>base_transform,
-    addChild:()=>{},
-  };
+  var base_transform = mat4.create();
+  mat4.translate(base_transform,base_transform,[0,0.0,-20.0])
+
+  const base_link = new TransformLink(base_transform);
 
   const base_joint0 = {angle:0,axis:[0,1,0]};
   const base0 = new Link("base0",0,0,base_joint0,base_link);
   base0.build(gl,shaderProgram);
 
-  const joint0 = {angle:3.1415/4,axis:[0,0,1]};
+  const joint0 = {angle:PI/4,axis:[0,0,1]};
   const link0 = new Link("joint0",4,1,joint0,base0);
   link0.build(gl,shaderProgram);
 
-  const joint1 = {angle:-3.1415/4,axis:[0,0,1]};
+  const joint1 = {angle:-PI/4,axis:[0,0,1]};
   const link1 = new Link("joint1",4,1,joint1,link0);
   link1.build(gl,shaderProgram);
 
-  const joint2 = {angle:-3.1415/4,axis:[0,0,1]};
+  const joint2 = {angle:-PI/4,axis:[0,0,1]};
   const link2 = new Link("joint2",4,1,joint2,link1);
   link2.build(gl,shaderProgram);
 
-  const knuckle00 = {angle:-3.1415/3,axis:[0,0,1]};
+  const knuckle00 = {angle:-PI/3,axis:[0,0,1]};
   const finger00 = new Link("finger00",1,0.5,knuckle00,link2);
   finger00.build(gl,shaderProgram);
 
-  const knuckle01 = {angle:3.1415/3,axis:[0,0,1]};
+  const knuckle01 = {angle:PI/3,axis:[0,0,1]};
   const finger01 = new Link("finger01",1,0.5,knuckle01,finger00);
   finger01.build(gl,shaderProgram);
 
-  const knuckle10 = {angle:3.1415/3,axis:[0,0,1]};
+  const knuckle10 = {angle:PI/3,axis:[0,0,1]};
   const finger10 = new Link("finger10",1,0.5,knuckle10,link2);
   finger10.build(gl,shaderProgram);
 
-  const knuckle11 = {angle:-3.1415/3,axis:[0,0,1]};
+  const knuckle11 = {angle:-PI/3,axis:[0,0,1]};
   const finger11 = new Link("finger11",1,0.5,knuckle11,finger10);
   finger11.build(gl,shaderProgram);
 
@@ -197,7 +202,6 @@ function main() {
   const statusText = document.getElementById("status-text");
   const statusGlyph = document.getElementById("server-status")
 
-
   const requestCallbacks = {
     "onload":(request)=>{
         let response = JSON.parse(request.responseText);
@@ -205,7 +209,7 @@ function main() {
           link.update(response[link.id]);
         });
         statusText.innerHTML = request.responseText;
-        draw(gl,programInfo,drawList);
+        draw(gl,programInfo,drawList,projectionMatrix);
       },
     "onerror":(error)=>{
       active = false;
@@ -215,7 +219,7 @@ function main() {
 
   window.setInterval(()=>{
     if(active){
-      httpRequest("127.0.0.1:8002","GET","",requestCallbacks);
+      httpRequest("127.0.0.1:8002/status","GET","",requestCallbacks);
     }
   },100);
 
@@ -224,53 +228,54 @@ function main() {
     statusGlyph.className = "glyphicon glyphicon-ok";
   };
 
+  //allow mouse click and drag to change the perspective
+  var mouseHold = false;
+  const worldX = vec4.fromValues(1,0,0,0);
+  const worldY = vec4.fromValues(0,1,0,0);
+  const worldZ = vec4.fromValues(0,0,1,0);
+  const dragFactorY = 2*PI/gl.canvas.clientHeight;
+  const dragFactorX = 2*PI/gl.canvas.clientWidth;
+  const origin = vec4.create();
 
-  // var then = 0;
-  // var totalTime = 0;
-  // // Draw the scene repeatedly
-  // function render(now) {
-  //   now *= 0.001;  // convert to seconds
-  //   const deltaTime = now - then;
-  //   then = now;
+  const inverse = mat4.create();
+  const rotationX = vec4.create();
+  const rotationY = vec4.create();
+  var currDir = 0;
+  // var mousePos = {x:0,y:0};
+  canvas.onmousedown = (e)=>{
+    mouseHold = true;
+  };
 
-  //   draw(gl,programInfo,drawList);
-  //   totalTime += deltaTime;
+  canvas.onmouseup = (e)=>{
+    mouseHold = false;
+  };
 
-  //   if(keys.q){
-  //     link0.move(deltaTime);
-  //   } else if(keys.a){
-  //     link0.move(-deltaTime);
-  //   }
+  canvas.onmouseout = (e)=>{
+    mouseHold = false;
+  };
 
-  //   if(keys.w){
-  //     link1.move(deltaTime);
-  //   } else if(keys.s){
-  //     link1.move(-deltaTime);
-  //   }
+  canvas.onmousemove = (e)=>{
+    if(mouseHold){
+      //the mathy way to do it; not very intuitive to control
+      // let fromMouse = mat4.fromValues(e.movementX,e.movementY,0);
+      // let mag = vec3.length(fromMouse);
+      // vec3.normalize(fromMouse,fromMouse);
+      // vec3.cross(fromMouse,fromScreen,fromMouse);
+      // base_link.rotate(mag/10,fromMouse);
+      
+      //the more intuitive control scheme
+      const x = e.movementX;
+      const y = e.movementY;
+      mat4.invert(inverse,base_link.getTransform());
 
-  //   if(keys.e){
-  //     link2.move(deltaTime);
-  //   } else if(keys.d){
-  //     link2.move(-deltaTime);
-  //   }
+      vec4.transformMat4(rotationX,worldY,inverse);
+      vec4.transformMat4(rotationY,worldX,inverse);
 
-  //   if(keys.z){
-  //     base0.move(-deltaTime);
-  //   } else if(keys.c){
-  //     base0.move(deltaTime);
-  //   }
-
-  //   if(keys[' ']&&knuckle00.angle < -3.1415/5){
-  //     finger00.move(deltaTime);
-  //     finger10.move(-deltaTime);
-  //   } else if(!keys[' ']&&knuckle00.angle > -3.1415/3){
-  //     finger00.move(-deltaTime);
-  //     finger10.move(+deltaTime);
-  //   }
-
-  //   requestAnimationFrame(render);
-  // }
-  // requestAnimationFrame(render);
+      base_link.rotateLink(x*dragFactorX,rotationX);
+      base_link.rotateLink(y*dragFactorY,rotationY);
+      
+    }
+  };
 }
 
 var keys;
