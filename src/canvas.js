@@ -195,6 +195,8 @@ function main() {
   var active = true;
 
   const statusText = document.getElementById("status-text");
+  const statusGlyph = document.getElementById("server-status")
+
 
   const requestCallbacks = {
     "onload":(request)=>{
@@ -207,6 +209,7 @@ function main() {
       },
     "onerror":(error)=>{
       active = false;
+      statusGlyph.className = "glyphicon glyphicon-remove";
     },
   }
 
@@ -216,7 +219,10 @@ function main() {
     }
   },100);
 
-  document.getElementById("reload-connection").onclick = ()=>{active = true;};
+  document.getElementById("reload-connection").onclick = ()=>{
+    active = true;
+    statusGlyph.className = "glyphicon glyphicon-ok";
+  };
 
 
   // var then = 0;
