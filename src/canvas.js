@@ -12,6 +12,8 @@ import {TransformLink} from './TransformLink.js';
 import vsSource from './basic-vertex-shader.vs';
 import fsSource from './basic-frag-shader.fs';
 
+import {rayCast} from './VectorMath.js';
+
 const PI = 3.14159265359
 
 //
@@ -200,7 +202,11 @@ function main() {
   var active = true;
 
   const statusText = document.getElementById("status-text");
-  const statusGlyph = document.getElementById("server-status")
+  const statusGlyph = document.getElementById("server-status");
+
+  var canvasX = 0;
+  var canvasY = 0;
+  var mouseUpdate = false;
 
   const requestCallbacks = {
     "onload":(request)=>{
@@ -209,13 +215,19 @@ function main() {
           link.update(response[link.id]);
         });
         statusText.innerHTML = request.responseText;
+        drawList.forEach(
+          (link)=>link.rayCast([canvasX,-canvasY,0],projectionMatrix)
+        );
         draw(gl,programInfo,drawList,projectionMatrix);
+        mouseUpdate = false;
       },
     "onerror":(error)=>{
       active = false;
       statusGlyph.className = "glyphicon glyphicon-remove";
     },
   }
+
+  // console.log(rayCast([0,0,-1],[[-2,-0.4,-0.5],[2,-0.4,-0.5],[-2,0.6,-0.5]]));
 
   window.setInterval(()=>{
     if(active){
@@ -273,9 +285,15 @@ function main() {
 
       base_link.rotateLink(x*dragFactorX,rotationX);
       base_link.rotateLink(y*dragFactorY,rotationY);
-      
     }
+
+    canvasX = (e.pageX - e.currentTarget.offsetLeft - gl.canvas.clientWidth/2 )/gl.canvas.clientWidth*2;
+    canvasY = (e.clientY - e.currentTarget.offsetTop - gl.canvas.clientHeight/2)/gl.canvas.clientHeight*2;
+    // console.log("x: " + canvasX + " y: " + canvasY);
+    mouseUpdate = true;
   };
+
+  // console.log(pointInTriangle([0.9,0.01],[[0,0],[1,0],[0,1]]));
 }
 
 var keys;

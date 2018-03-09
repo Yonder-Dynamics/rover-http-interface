@@ -4,8 +4,9 @@
  * 
  * Author: Alex Haggart
  */
-import {mat4} from 'gl-matrix';
+import {mat4,vec3} from 'gl-matrix';
 import {Cubic} from './cubic.js';
+import {rayCast,pointInTriangle} from './VectorMath.js';
 
 class Link{
   constructor(id,length,width,joint,parent){
@@ -18,13 +19,7 @@ class Link{
     this.joint = joint;
     this.length = length;
 
-    this.buildTransforms();
-    // const origin = vec4.create();
-    // vec4.set(origin,0,0,0,1);
-    // vec4.transformMat4(origin,origin,this.connector);
-
-    // console.log(this.connector);
-    
+    this.buildTransforms();    
   }
 
   buildTransforms(){
@@ -65,9 +60,37 @@ class Link{
     this.update(angle+this.joint.angle);
   }
 
+  rayCast(ray,mvp){
+    let triangles = this.wireframe.getTriangles();
+    let triangle = [];
+    const v0 = vec3.create();
+    const v1 = vec3.create();
+    const v2 = vec3.create();
+    const screenSpace = mat4.create();
+    const world_space = mat4.create();
+    this.getWorldSpace(world_space);
+    mat4.mul(screenSpace,mvp,world_space);
+    for(let i=0;i<triangles.length;i+=3){
+      triangle = triangles.slice(i,i+3);
+      vec3.set(v0,triangle[0][0],triangle[0][1],triangle[0][2]);
+      vec3.set(v1,triangle[1][0],triangle[1][1],triangle[1][2]);
+      vec3.set(v2,triangle[2][0],triangle[2][1],triangle[2][2]);
+
+      vec3.transformMat4(v0,v0,screenSpace);
+      vec3.transformMat4(v1,v1,screenSpace);
+      vec3.transformMat4(v2,v2,screenSpace);
+
+      // console.log(v0);
+
+      if(pointInTriangle([ray[0],ray[1]],[[v0[0],v0[1]],[v1[0],v1[1]],[v2[0],v2[1]]])){
+        this.wireframe.rayTest = true;
+      }
+    }
+  }
+
   draw(gl){
     const world_space = mat4.create();
-    mat4.mul(world_space,this.parent.getTransform(),this.transform);
+    this.getWorldSpace(world_space);
 
 
     gl.uniformMatrix4fv(
@@ -80,6 +103,11 @@ class Link{
 
   getTransform(){
     return this.connector;
+  }
+
+  getWorldSpace(out){
+    mat4.mul(out,this.parent.getTransform(),this.transform);
+    return out;
   }
 }
 
