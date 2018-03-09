@@ -121,19 +121,19 @@ function draw(gl,programInfo,drawList,projection,fromCamera){
 
   gl.uniform4f(
       programInfo.uniformLocations.warmColor,
-      1,0,0,1);
+      1,1,1,1);
 
   gl.uniform4f(
       programInfo.uniformLocations.coolColor,
-      0,0,1,1);
+      0,0,0,1);
 
   gl.uniform1f(
       programInfo.uniformLocations.alpha,
-      0.3);
+      0.6);
 
   gl.uniform1f(
       programInfo.uniformLocations.beta,
-      0.3);
+      0.6);
 
   // gl.uniformMatrix4fv(
   //   programInfo.uniformLocations.lightSource,

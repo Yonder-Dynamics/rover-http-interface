@@ -38,7 +38,7 @@ class Cubic{
     this.z = z;
 
     //rgba
-    this.color = [0.9,0.9,0.9,1.0];
+    this.color = [0.2,0.2,0.9,1.0];
 
     this.buffers = {};
     this.positions = {};
@@ -197,6 +197,8 @@ class Cubic{
     ].reduce((flat,nextComponent)=>{
       Array.prototype.push.apply(flat,nextComponent);return flat;
     },[]);
+
+    this.normals = this.normals.map((norm,idx)=>norm+this.vertices[idx]);
 
     this.buffers.normalBuffer = createAndBindBuffer(gl,gl.ARRAY_BUFFER,new Float32Array(this.normals),gl.STATIC_DRAW);
 

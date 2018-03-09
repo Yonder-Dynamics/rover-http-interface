@@ -15,7 +15,7 @@ void main() {
   vec4 worldPosition  = uModelViewMatrix * aVertexPosition;
   vec4 normalPosition = uModelViewMatrix * aVertexNormal;
 
-  vNormal = normalPosition.xyz;
+  vNormal = normalPosition.xyz - worldPosition.xyz;
 
   vColor = aVertexColor;
 
