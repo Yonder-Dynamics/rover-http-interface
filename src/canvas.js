@@ -88,12 +88,14 @@ function makePerspectiveMatrix(gl){
   return projectionMatrix;
 }
 
-function draw(gl,programInfo,drawList,projection){
+function draw(gl,programInfo,drawList,projection,fromCamera){
   gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
   gl.clearDepth(1.0);                 // Clear everything
   gl.enable(gl.DEPTH_TEST);           // Enable depth testing
   gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
 
+  gl.enable(gl.CULL_FACE);
+  // gl.frontFace(gl.CCW);
   // Clear the canvas before we start drawing on it.
 
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -107,6 +109,36 @@ function draw(gl,programInfo,drawList,projection){
       programInfo.uniformLocations.projectionMatrix,
       false,
       projection);
+
+  gl.uniformMatrix4fv(
+      programInfo.uniformLocations.fromCameraMatrix,
+      false,
+      fromCamera);
+
+  gl.uniform3f(
+      programInfo.uniformLocations.lightSourcePosition,
+      -5,0,0);
+
+  gl.uniform4f(
+      programInfo.uniformLocations.warmColor,
+      1,0,0,1);
+
+  gl.uniform4f(
+      programInfo.uniformLocations.coolColor,
+      0,0,1,1);
+
+  gl.uniform1f(
+      programInfo.uniformLocations.alpha,
+      0.3);
+
+  gl.uniform1f(
+      programInfo.uniformLocations.beta,
+      0.3);
+
+  // gl.uniformMatrix4fv(
+  //   programInfo.uniformLocations.lightSource,
+  //   false,
+  //   lightSource);
 
   drawList.forEach((obj)=>obj.draw(gl));
 }
@@ -143,51 +175,59 @@ function main() {
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
       vertexColor: gl.getAttribLocation(shaderProgram,'aVertexColor'),
+      vertexNormal: gl.getAttribLocation(shaderProgram,'aVertexNormal'),
     },
     uniformLocations: {
       projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+      fromCameraMatrix: gl.getUniformLocation(shaderProgram, 'uFromCameraMatrix'),
       modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+      lightSourcePosition: gl.getUniformLocation(shaderProgram, 'uLightSource'),
+      warmColor: gl.getUniformLocation(shaderProgram, 'uWarmColor'),
+      coolColor: gl.getUniformLocation(shaderProgram, 'uCoolColor'),
+      alpha: gl.getUniformLocation(shaderProgram, 'uAlpha'),
+      beta: gl.getUniformLocation(shaderProgram, 'uBeta'),
     },
   };
 
   const projectionMatrix = makePerspectiveMatrix(gl);
 
   var base_transform = mat4.create();
-  mat4.translate(base_transform,base_transform,[0,0.0,-20.0])
+  var fromCamera = mat4.create();
+  mat4.translate(fromCamera,fromCamera,[0,0.0,-20.0])
 
   const base_link = new TransformLink(base_transform);
 
   const base_joint0 = {angle:0,axis:[0,1,0]};
   const base0 = new Link("base0",0,0,base_joint0,base_link);
-  base0.build(gl,shaderProgram);
+  base0.build(gl,programInfo);
 
   const joint0 = {angle:PI/4,axis:[0,0,1]};
   const link0 = new Link("joint0",4,1,joint0,base0);
-  link0.build(gl,shaderProgram);
+  link0.build(gl,programInfo);
 
   const joint1 = {angle:-PI/4,axis:[0,0,1]};
-  const link1 = new Link("joint1",4,1,joint1,link0);
-  link1.build(gl,shaderProgram);
+  const link1 = new Link("joint1",4,0.9,joint1,link0);
+  link1.build(gl,programInfo);
 
   const joint2 = {angle:-PI/4,axis:[0,0,1]};
   const link2 = new Link("joint2",4,1,joint2,link1);
-  link2.build(gl,shaderProgram);
+  link2.build(gl,programInfo);
 
   const knuckle00 = {angle:-PI/3,axis:[0,0,1]};
   const finger00 = new Link("finger00",1,0.5,knuckle00,link2);
-  finger00.build(gl,shaderProgram);
+  finger00.build(gl,programInfo);
 
   const knuckle01 = {angle:PI/3,axis:[0,0,1]};
   const finger01 = new Link("finger01",1,0.5,knuckle01,finger00);
-  finger01.build(gl,shaderProgram);
+  finger01.build(gl,programInfo);
 
   const knuckle10 = {angle:PI/3,axis:[0,0,1]};
   const finger10 = new Link("finger10",1,0.5,knuckle10,link2);
-  finger10.build(gl,shaderProgram);
+  finger10.build(gl,programInfo);
 
   const knuckle11 = {angle:-PI/3,axis:[0,0,1]};
   const finger11 = new Link("finger11",1,0.5,knuckle11,finger10);
-  finger11.build(gl,shaderProgram);
+  finger11.build(gl,programInfo);
 
 
   const links = [
@@ -208,6 +248,10 @@ function main() {
   var canvasY = 0;
   var mouseUpdate = false;
 
+  const combinedViewMatrix = mat4.create();
+  mat4.mul(combinedViewMatrix,projectionMatrix,fromCamera);
+
+
   const requestCallbacks = {
     "onload":(request)=>{
         let response = JSON.parse(request.responseText);
@@ -216,9 +260,9 @@ function main() {
         });
         statusText.innerHTML = request.responseText;
         drawList.forEach(
-          (link)=>link.rayCast([canvasX,-canvasY,0],projectionMatrix)
+          (link)=>link.rayCast([canvasX,-canvasY,0],combinedViewMatrix)
         );
-        draw(gl,programInfo,drawList,projectionMatrix);
+        draw(gl,programInfo,drawList,projectionMatrix,fromCamera);
         mouseUpdate = false;
       },
     "onerror":(error)=>{

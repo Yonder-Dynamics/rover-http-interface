@@ -40,9 +40,9 @@ class Link{
     mat4.mul(this.connector,world_space,this.connector);
   }
 
-  build(gl,shaderProgram){
-    this.wireframe.build(gl,shaderProgram);
-    this.uniforms.transform     = gl.getUniformLocation(shaderProgram,'uModelViewMatrix');
+  build(gl,programInfo){
+    this.wireframe.build(gl,programInfo);
+    this.uniforms.transform = programInfo.uniformLocations.modelViewMatrix;
 
   }
 

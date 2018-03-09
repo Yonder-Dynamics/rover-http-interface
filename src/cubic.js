@@ -38,7 +38,7 @@ class Cubic{
     this.z = z;
 
     //rgba
-    this.color = [0.2,0.2,0.9,1.0];
+    this.color = [0.9,0.9,0.9,1.0];
 
     this.buffers = {};
     this.positions = {};
@@ -48,37 +48,64 @@ class Cubic{
     this.indices = [];
     this.colors = [];
     this.triangles = [];
+    this.normals = [];
 
     this.rayTest = false;
   }
 
-  build(gl,shaderProgram){
+  build(gl,programInfo){
     //create vertex array
     this.vertices = [
-      -this.x/2,  -this.y/2, -this.z/2, //front face
+      -this.x/2,  -this.y/2,  this.z/2, //front face
+       this.x/2,  -this.y/2,  this.z/2,
+       this.x/2,   this.y/2,  this.z/2,
+      -this.x/2,   this.y/2,  this.z/2,
+
+      -this.x/2,  -this.y/2, -this.z/2, //back face
        this.x/2,  -this.y/2, -this.z/2,
        this.x/2,   this.y/2, -this.z/2,
       -this.x/2,   this.y/2, -this.z/2,
 
-      -this.x/2,  -this.y/2,  this.z/2, //back face
-       this.x/2,  -this.y/2,  this.z/2,
+       this.x/2,  -this.y/2,  this.z/2, //right face
+       this.x/2,  -this.y/2, -this.z/2,
+       this.x/2,   this.y/2, -this.z/2,
        this.x/2,   this.y/2,  this.z/2,
+
+      -this.x/2,  -this.y/2, -this.z/2, //left face
+      -this.x/2,  -this.y/2,  this.z/2,
       -this.x/2,   this.y/2,  this.z/2,
+      -this.x/2,   this.y/2, -this.z/2,
+
+      -this.x/2,   this.y/2,  this.z/2, //top face
+       this.x/2,   this.y/2,  this.z/2,
+       this.x/2,   this.y/2, -this.z/2,
+      -this.x/2,   this.y/2, -this.z/2,
+
+      -this.x/2,  -this.y/2, -this.z/2, //bottom face
+       this.x/2,  -this.y/2, -this.z/2,
+       this.x/2,  -this.y/2,  this.z/2,
+      -this.x/2,  -this.y/2,  this.z/2,
+
     ];
 
     this.triangles = [ //set of indices prodicing triangles that cover the cube
       0,1,3, //front lower
       2,3,1, //front upper
+
       5,4,7, //back lower
       7,6,5, //back upper
-      1,5,6, //right lower
-      6,2,1, //right upper
-      0,7,4, //left lower
-      7,0,3, //left upper
-      3,2,6, //top lower
-      7,3,6, //top upper
-      4,5,1, //bottom lower
-      0,5,1, //bottom upper
+
+      8,9,10, //right lower
+      10,11,8, //right upper
+
+      12,13,14, //left lower
+      14,15,12, //left upper
+
+      16,17,18, //top lower
+      18,19,16, //top upper
+
+      20,21,22, //bottom lower
+      22,23,20, //bottom upper
     ]; 
 
     this.buffers.triangleBuffer = createAndBindBuffer(gl,gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(this.triangles),gl.STATIC_DRAW);
@@ -89,18 +116,89 @@ class Cubic{
     this.buffers.vertexBuffer = createAndBindBuffer(gl,gl.ARRAY_BUFFER,new Float32Array(this.vertices),gl.STATIC_DRAW);
 
     this.colors = [
-      0.2,  0.2,  0.9,  1.0,
-      0.2,  0.2,  0.9,  1.0,
-      0.2,  0.2,  0.9,  1.0,
-      0.2,  0.2,  0.9,  1.0,
+      this.color,
+      this.color,
+      this.color,
+      this.color,
 
-      0.2,  0.2,  0.9,  1.0,
-      0.2,  0.2,  0.9,  1.0,
-      0.2,  0.2,  0.9,  1.0,
-      0.2,  0.2,  0.9,  1.0,
-    ];
+      this.color,
+      this.color,
+      this.color,
+      this.color,
+
+      this.color,
+      this.color,
+      this.color,
+      this.color,
+      // [0.9,0.4,0.4,1.0],
+      // [0.9,0.4,0.4,1.0],
+      // [0.9,0.4,0.4,1.0],
+      // [0.9,0.4,0.4,1.0],
+
+      this.color,
+      this.color,
+      this.color,
+      this.color,
+
+      this.color,
+      this.color,
+      this.color,
+      this.color,
+
+      this.color,
+      this.color,
+      this.color,
+      this.color,
+    ].reduce((flat,nextColor)=>{
+      Array.prototype.push.apply(flat,nextColor);return flat;
+    },[]);
+
+    // console.log(this.colors);
 
     this.buffers.colorBuffer = createAndBindBuffer(gl,gl.ARRAY_BUFFER,new Float32Array(this.colors),gl.STATIC_DRAW);
+
+    const nFront = [0,0,1];
+    const nBack  = [0,0,-1];
+    const nRight = [1,0,0];
+    const nLeft  = [-1,0,0];
+    const nTop   = [0,1,0];
+    const nBot   = [0,-1,0];
+
+    this.normals = [
+      nFront,
+      nFront,
+      nFront,
+      nFront,
+
+      nBack,
+      nBack,
+      nBack,
+      nBack,
+
+      nRight,
+      nRight,
+      nRight,
+      nRight,
+
+      nLeft,
+      nLeft,
+      nLeft,
+      nLeft,
+
+      nTop,
+      nTop,
+      nTop,
+      nTop,
+
+      nBot,
+      nBot,
+      nBot,
+      nBot,
+    ].reduce((flat,nextComponent)=>{
+      Array.prototype.push.apply(flat,nextComponent);return flat;
+    },[]);
+
+    this.buffers.normalBuffer = createAndBindBuffer(gl,gl.ARRAY_BUFFER,new Float32Array(this.normals),gl.STATIC_DRAW);
 
     this.indices = [
       0,1,1,2,2,3,3,0, //front face
@@ -110,8 +208,9 @@ class Cubic{
 
     this.buffers.indexBuffer = createAndBindBuffer(gl,gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(this.indices),gl.STATIC_DRAW);
 
-    this.positions.vertexBuffer = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
-    this.positions.colorBuffer  = gl.getAttribLocation(shaderProgram, 'aVertexColor');
+    this.positions.vertexBuffer = programInfo.attribLocations.vertexPosition;
+    this.positions.colorBuffer  = programInfo.attribLocations.vertexColor;
+    this.positions.normalBuffer = programInfo.attribLocations.vertexNormal;
 
     return this;
   }
@@ -119,6 +218,7 @@ class Cubic{
   draw(gl){
 
     enableVertexFloatArrayBuffer(gl,this.buffers.vertexBuffer,this.positions.vertexBuffer,3);
+    enableVertexFloatArrayBuffer(gl,this.buffers.normalBuffer,this.positions.normalBuffer,3);
     enableVertexFloatArrayBuffer(gl,this.buffers.colorBuffer,this.positions.colorBuffer,4);
 
     // draw everything
