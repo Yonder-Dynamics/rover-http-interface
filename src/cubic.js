@@ -5,6 +5,7 @@
  * 
  * Author: Alex Haggart
  */
+
 function createAndBindBuffer(gl,type,data,usage){
   const buffer = gl.createBuffer();
   gl.bindBuffer(type,buffer);
@@ -249,4 +250,45 @@ class Cubic{
   }
 }
 
-export {Cubic};
+class OrientationAxes{
+  constructor(size,parent){
+    this.buffers = [];
+    this.positions = [];
+    this.parent = parent;
+    this.size = size;
+  }
+  build(gl,programInfo){
+    this.vertices = [ 0,0,0,  this.size,0,0,  0,this.size,0,  0,0,this.size ];
+    this.buffers.vertexBuffer = createAndBindBuffer(gl,gl.ARRAY_BUFFER,new Float32Array(this.vertices),gl.STATIC_DRAW);
+    // this.indices = [  0,1,  2,3,  4,5,  1,3,  1,5,  3,5 ];
+    this.indices = [  0,1,2, 0,1,3, 0,2,3];
+    this.buffers.indexBuffer  = createAndBindBuffer(gl,gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(this.indices),gl.STATIC_DRAW);
+    // this.colors = [ 0,0,0,1,  1,0,0,1,  0,1,0,1,  0,1,0,1,  0,0,1,1,  0,0,1,1 ];
+    this.colors = [ 0,0,0,1,  1,0,0,1,  0,1,0,1,   0,0,1,1 ];
+    this.buffers.colorBuffer  = createAndBindBuffer(gl,gl.ARRAY_BUFFER,new Float32Array(this.colors),gl.STATIC_DRAW);
+
+    this.positions.vertexBuffer = programInfo.attribLocations.vertexPosition;
+    this.positions.colorBuffer  = programInfo.attribLocations.vertexColor;
+    this.positions.modelViewMatrix  = programInfo.uniformLocations.modelViewMatrix;
+
+    // this.transform = mat4.create();
+  }
+  draw(gl){
+    // console.log(this.getTransform())
+    gl.uniformMatrix4fv(
+        this.positions.modelViewMatrix,
+        false,
+        this.parent.getTransform());
+    enableVertexFloatArrayBuffer(gl,this.buffers.vertexBuffer,this.positions.vertexBuffer,3);
+    enableVertexFloatArrayBuffer(gl,this.buffers.colorBuffer,this.positions.colorBuffer,4);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indexBuffer);
+    const offset = 0;
+    const vertexCount = 9;
+    const type = gl.UNSIGNED_SHORT;
+    gl.disable(gl.CULL_FACE);
+    gl.drawElements(gl.TRIANGLES,vertexCount,type,offset);
+    gl.enable(gl.CULL_FACE);
+  }
+}
+
+export {Cubic,OrientationAxes};

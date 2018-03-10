@@ -59,6 +59,11 @@ class TransformLink{
   getTransform(){
     return this.connector;
   }
+
+  setTransform(transform){
+    this.transform = transform;
+    this.update();
+  }
 };
 
 export {TransformLink}

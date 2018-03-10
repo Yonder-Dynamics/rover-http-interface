@@ -24,8 +24,7 @@ class Link{
 
   buildTransforms(){
     this.transform = mat4.create();
-    // Now move the drawing position a bit to where we want to
-    // start drawing the square.
+
     mat4.fromRotation(this.transform,this.joint.angle,this.joint.axis);
     const translation = mat4.create();
     mat4.fromTranslation(translation,[this.length/2, 0.0, 0.0]); //position one end of segment 
@@ -54,10 +53,6 @@ class Link{
     this.joint.angle = angle;
     this.buildTransforms();
     this.children.forEach((child)=>child.update());
-  }
-
-  move(angle){
-    this.update(angle+this.joint.angle);
   }
 
   rayCast(ray,mvp){
@@ -108,6 +103,38 @@ class Link{
   getWorldSpace(out){
     mat4.mul(out,this.parent.getTransform(),this.transform);
     return out;
+  }
+}
+
+class ImmobileLink extends Link{
+  constructor(id,size,offset,parent){
+    this.wireframe = new Cubic(size[0],size[1],size[2]);
+    this.uniforms = {};
+    this.parent = parent;
+    this.children = [];
+    this.parent.addChild(this);
+    this.buildTransforms();
+  }
+  buildTransforms(){
+    this.transform = mat4.create();
+
+    mat4.fromRotation(this.transform,this.joint.angle,this.joint.axis);
+    const translation = mat4.create();
+    mat4.fromTranslation(translation,[this.length/2, 0.0, 0.0]); //position one end of segment 
+    mat4.mul(this.transform,this.transform,translation);
+
+    const world_space = mat4.create();
+    mat4.copy(world_space,this.parent.getTransform());
+
+    this.connector = mat4.create();
+    mat4.fromTranslation(this.connector,[this.length/2,0,0]);
+    mat4.mul(world_space,world_space,this.transform);
+    mat4.mul(this.connector,world_space,this.connector);
+  }
+
+  update(){
+    this.buildTransforms();
+    this.children.forEach((child)=>child.update());
   }
 }
 

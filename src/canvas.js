@@ -6,6 +6,7 @@
  */
 import {mat4,vec4,vec3} from 'gl-matrix';
 import {Link} from './link.js';
+import {OrientationAxes} from './cubic.js';
 import {httpRequest} from './computeServer.js';
 import {TransformLink} from './TransformLink.js';
 
@@ -88,33 +89,27 @@ function makePerspectiveMatrix(gl){
   return projectionMatrix;
 }
 
-function draw(gl,programInfo,drawList,projection,fromCamera){
+function initGL(gl){
   gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
   gl.clearDepth(1.0);                 // Clear everything
   gl.enable(gl.DEPTH_TEST);           // Enable depth testing
   gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
-
   gl.enable(gl.CULL_FACE);
-  // gl.frontFace(gl.CCW);
+  gl.frontFace(gl.CCW);
+
+}
+
+function clearScreen(gl){
   // Clear the canvas before we start drawing on it.
-
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+}
 
+function initProgram(gl,programInfo){
   // Tell WebGL to use our program when drawing
   gl.useProgram(programInfo.program);
+}
 
-  // Set the shader uniforms
-
-  gl.uniformMatrix4fv(
-      programInfo.uniformLocations.projectionMatrix,
-      false,
-      projection);
-
-  gl.uniformMatrix4fv(
-      programInfo.uniformLocations.fromCameraMatrix,
-      false,
-      fromCamera);
-
+function useShadow(gl,programInfo){
   gl.uniform3f(
       programInfo.uniformLocations.lightSourcePosition,
       -5,0,0);
@@ -134,11 +129,47 @@ function draw(gl,programInfo,drawList,projection,fromCamera){
   gl.uniform1f(
       programInfo.uniformLocations.beta,
       0.6);
+}
 
-  // gl.uniformMatrix4fv(
-  //   programInfo.uniformLocations.lightSource,
-  //   false,
-  //   lightSource);
+function noShadow(gl,programInfo){
+  gl.uniform3f(
+      programInfo.uniformLocations.lightSourcePosition,
+      0,0,0);
+
+  gl.uniform4f(
+      programInfo.uniformLocations.warmColor,
+      0,0,0,1);
+
+  gl.uniform4f(
+      programInfo.uniformLocations.coolColor,
+      0,0,0,1);
+
+  gl.uniform1f(
+      programInfo.uniformLocations.alpha,
+      1.0);
+
+  gl.uniform1f(
+      programInfo.uniformLocations.beta,
+      1.0);
+}
+
+function screenCoords(gl,event){
+  const x = (event.pageX - event.currentTarget.offsetLeft - gl.canvas.clientWidth/2 )/gl.canvas.clientWidth*2;
+  const y = (event.clientY - event.currentTarget.offsetTop - gl.canvas.clientHeight/2)/gl.canvas.clientHeight*2;
+  return [x,y];
+}
+
+function draw(gl,programInfo,drawList,projection,fromCamera){
+  // Set the shader uniforms
+  gl.uniformMatrix4fv(
+      programInfo.uniformLocations.projectionMatrix,
+      false,
+      projection);
+
+  gl.uniformMatrix4fv(
+      programInfo.uniformLocations.fromCameraMatrix,
+      false,
+      fromCamera);
 
   drawList.forEach((obj)=>obj.draw(gl));
 }
@@ -189,6 +220,9 @@ function main() {
     },
   };
 
+  initGL(gl);
+  initProgram(gl,programInfo);
+
   const projectionMatrix = makePerspectiveMatrix(gl);
 
   var base_transform = mat4.create();
@@ -229,6 +263,8 @@ function main() {
   const finger11 = new Link("finger11",1,0.5,knuckle11,finger10);
   finger11.build(gl,programInfo);
 
+  const axes = new OrientationAxes(1,base_link);
+  axes.build(gl,programInfo);
 
   const links = [
     base0,
@@ -238,6 +274,7 @@ function main() {
   ];
 
   const drawList = links.map((link)=>link);
+  // drawList.push(axes);
 
   var active = true;
 
@@ -251,18 +288,22 @@ function main() {
   const combinedViewMatrix = mat4.create();
   mat4.mul(combinedViewMatrix,projectionMatrix,fromCamera);
 
+  const guiSpace3D = mat4.create();
+  mat4.fromTranslation(guiSpace3D,[4,3,-10]);
 
   const requestCallbacks = {
     "onload":(request)=>{
         let response = JSON.parse(request.responseText);
         links.forEach((link)=>{
           link.update(response[link.id]);
+          link.rayCast([canvasX,-canvasY,0],combinedViewMatrix);
         });
         statusText.innerHTML = request.responseText;
-        drawList.forEach(
-          (link)=>link.rayCast([canvasX,-canvasY,0],combinedViewMatrix)
-        );
+        clearScreen(gl);
+        useShadow(gl,programInfo);
         draw(gl,programInfo,drawList,projectionMatrix,fromCamera);
+        noShadow(gl,programInfo);
+        draw(gl,programInfo,[axes],projectionMatrix,guiSpace3D);
         mouseUpdate = false;
       },
     "onerror":(error)=>{
@@ -270,8 +311,6 @@ function main() {
       statusGlyph.className = "glyphicon glyphicon-remove";
     },
   }
-
-  // console.log(rayCast([0,0,-1],[[-2,-0.4,-0.5],[2,-0.4,-0.5],[-2,0.6,-0.5]]));
 
   window.setInterval(()=>{
     if(active){
@@ -293,10 +332,13 @@ function main() {
   const dragFactorX = 2*PI/gl.canvas.clientWidth;
   const origin = vec4.create();
 
-  const inverse = mat4.create();
-  const rotationX = vec4.create();
-  const rotationY = vec4.create();
+  const rotationTotal = mat4.create();
+  const rotationX = mat4.create();
+  const rotationY = mat4.create();
   var currDir = 0;
+  var theta = 0;
+  var rho = 0;
+  var speedFactor = 2;
   // var mousePos = {x:0,y:0};
   canvas.onmousedown = (e)=>{
     mouseHold = true;
@@ -311,6 +353,7 @@ function main() {
   };
 
   canvas.onmousemove = (e)=>{
+    const sc = screenCoords(gl,e);
     if(mouseHold){
       //the mathy way to do it; not very intuitive to control
       // let fromMouse = mat4.fromValues(e.movementX,e.movementY,0);
@@ -320,19 +363,17 @@ function main() {
       // base_link.rotate(mag/10,fromMouse);
       
       //the more intuitive control scheme
-      const x = e.movementX;
-      const y = e.movementY;
-      mat4.invert(inverse,base_link.getTransform());
+      theta += speedFactor*(Math.acos(canvasX) - Math.acos(sc[0]));
+      rho -= speedFactor*(Math.acos(canvasY) - Math.acos(sc[1]));
+      mat4.fromRotation(rotationX,theta,worldY);
+      mat4.fromRotation(rotationY,-rho,worldX);
+      mat4.mul(rotationTotal,rotationX,rotationY);
 
-      vec4.transformMat4(rotationX,worldY,inverse);
-      vec4.transformMat4(rotationY,worldX,inverse);
-
-      base_link.rotateLink(x*dragFactorX,rotationX);
-      base_link.rotateLink(y*dragFactorY,rotationY);
+      base_link.setTransform(rotationTotal);
+      // base_link.update();
     }
-
-    canvasX = (e.pageX - e.currentTarget.offsetLeft - gl.canvas.clientWidth/2 )/gl.canvas.clientWidth*2;
-    canvasY = (e.clientY - e.currentTarget.offsetTop - gl.canvas.clientHeight/2)/gl.canvas.clientHeight*2;
+    canvasX = sc[0];
+    canvasY = sc[1];
     // console.log("x: " + canvasX + " y: " + canvasY);
     mouseUpdate = true;
   };
