@@ -78,7 +78,7 @@ class Link{
       // console.log(v0);
 
       if(pointInTriangle([ray[0],ray[1]],[[v0[0],v0[1]],[v1[0],v1[1]],[v2[0],v2[1]]])){
-        this.wireframe.rayTest = true;
+        this.wireframe.drawSides = false;
       }
     }
   }
@@ -94,6 +94,8 @@ class Link{
       world_space);
 
     this.wireframe.draw(gl);
+
+    this.wireframe.drawSides = true;
   }
 
   getTransform(){

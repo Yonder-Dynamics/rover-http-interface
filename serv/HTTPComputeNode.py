@@ -7,6 +7,8 @@ import time
 import signal
 import json
 
+hosts = "*"
+
 class ControlNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
   def __init__(self,request,client_address,server):
     SimpleHTTPServer.SimpleHTTPRequestHandler.__init__(self,request,client_address,server)
@@ -18,7 +20,7 @@ class ControlNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
     print(payload)
     print("{}: {}".format(time.time(),self.headers.getheader('content-type','not found')))
     self.send_response(200,"OK")
-    self.send_header("Access-Control-Allow-Origin","http://localhost:8080")
+    self.send_header("Access-Control-Allow-Origin",hosts)
     self.end_headers()
     # self.wfile.write("hello ack")
 
@@ -28,7 +30,7 @@ class ControlNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
   def do_GET(self):
     self.send_response(200,"OK")
-    self.send_header("Access-Control-Allow-Origin","http://localhost:8080")
+    self.send_header("Access-Control-Allow-Origin",hosts)
     self.end_headers()
 
     # send the content-type,query string, and stream to processor object
@@ -38,7 +40,7 @@ class ControlNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
   def do_OPTIONS(self):
     self.send_response(200,"OK")
     # support for CORS stuff
-    self.send_header("Access-Control-Allow-Origin","http://localhost:8080")
+    self.send_header("Access-Control-Allow-Origin",hosts)
     self.send_header("Access-Control-Allow-Headers","content-type,goalv")
     self.send_header("Access-Control-Allow-Methods","POST,GET")
 

@@ -1,5 +1,6 @@
 
 var computeAddress = "127.0.0.1:8002";
+var tx2 = "100.80.231.5:8002";
 
 const inputElem = document.getElementById("compute-node-input")
 inputElem.placeholder = computeAddress;
@@ -90,5 +91,5 @@ requestForm.onclick = requestNewPosition;
 const resetButton = document.getElementById("compute-node-reset");
 resetButton.onclick = resetConfiguration;
 
-export {httpRequest};
+export {httpRequest,computeAddress};
 

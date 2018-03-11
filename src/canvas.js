@@ -10,59 +10,15 @@ import {OrientationAxes} from './cubic.js';
 import {httpRequest} from './computeServer.js';
 import {TransformLink} from './TransformLink.js';
 
-import vsSource from './basic-vertex-shader.vs';
-import fsSource from './basic-frag-shader.fs';
-
 import {rayCast} from './VectorMath.js';
 
+import {computeAddress} from './computeServer.js';
+
+import {Voxel} from './voxel.js';
+
+import {GoochShader} from './GoochShader.js';
+
 const PI = 3.14159265359
-
-//
-// Initialize a shader program, so WebGL knows how to draw our data
-//
-function initShaderProgram(gl, vsSource, fsSource) {
-  const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
-  const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
-
-  // Create the shader program
-
-  const shaderProgram = gl.createProgram();
-  gl.attachShader(shaderProgram, vertexShader);
-  gl.attachShader(shaderProgram, fragmentShader);
-  gl.linkProgram(shaderProgram);
-
-  // If creating the shader program failed, alert
-
-  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-    console.error('Unable to initialize the shader program: ' + gl.getProgramInfoLog(shaderProgram));
-    return null;
-  }
-
-  return shaderProgram;
-}
-
-//
-// creates a shader of the given type, uploads the source and
-// compiles it.
-//
-function loadShader(gl, type, source) {
-  const shader = gl.createShader(type);
-
-  // Send the source to the shader object
-  gl.shaderSource(shader, source);
-
-  // Compile the shader program
-  gl.compileShader(shader);
-
-  // See if it compiled successfully
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.error('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
-    return null;
-  }
-
-  return shader;
-}
 
 function makePerspectiveMatrix(gl){
   // Create a perspective matrix, a special matrix that is
@@ -92,11 +48,6 @@ function makePerspectiveMatrix(gl){
 function initGL(gl){
   gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
   gl.clearDepth(1.0);                 // Clear everything
-  gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-  gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
-  gl.enable(gl.CULL_FACE);
-  gl.frontFace(gl.CCW);
-
 }
 
 function clearScreen(gl){
@@ -107,50 +58,6 @@ function clearScreen(gl){
 function initProgram(gl,programInfo){
   // Tell WebGL to use our program when drawing
   gl.useProgram(programInfo.program);
-}
-
-function useShadow(gl,programInfo){
-  gl.uniform3f(
-      programInfo.uniformLocations.lightSourcePosition,
-      -5,0,0);
-
-  gl.uniform4f(
-      programInfo.uniformLocations.warmColor,
-      1,1,1,1);
-
-  gl.uniform4f(
-      programInfo.uniformLocations.coolColor,
-      0,0,0,1);
-
-  gl.uniform1f(
-      programInfo.uniformLocations.alpha,
-      0.6);
-
-  gl.uniform1f(
-      programInfo.uniformLocations.beta,
-      0.6);
-}
-
-function noShadow(gl,programInfo){
-  gl.uniform3f(
-      programInfo.uniformLocations.lightSourcePosition,
-      0,0,0);
-
-  gl.uniform4f(
-      programInfo.uniformLocations.warmColor,
-      0,0,0,1);
-
-  gl.uniform4f(
-      programInfo.uniformLocations.coolColor,
-      0,0,0,1);
-
-  gl.uniform1f(
-      programInfo.uniformLocations.alpha,
-      1.0);
-
-  gl.uniform1f(
-      programInfo.uniformLocations.beta,
-      1.0);
 }
 
 function screenCoords(gl,event){
@@ -189,39 +96,12 @@ function main() {
   }
 
   initKeys();
-
-  // Set clear color to black, fully opaque
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  // Clear the color buffer with specified clear color
+  initGL(gl);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  // const vsSource = require('./basic-vertex-shader.vs');
-  
-  // const fsSource = require('./basic-frag-shader.fs');
-
-  const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
-
-  const programInfo = {
-    program: shaderProgram,
-    attribLocations: {
-      vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-      vertexColor: gl.getAttribLocation(shaderProgram,'aVertexColor'),
-      vertexNormal: gl.getAttribLocation(shaderProgram,'aVertexNormal'),
-    },
-    uniformLocations: {
-      projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-      fromCameraMatrix: gl.getUniformLocation(shaderProgram, 'uFromCameraMatrix'),
-      modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-      lightSourcePosition: gl.getUniformLocation(shaderProgram, 'uLightSource'),
-      warmColor: gl.getUniformLocation(shaderProgram, 'uWarmColor'),
-      coolColor: gl.getUniformLocation(shaderProgram, 'uCoolColor'),
-      alpha: gl.getUniformLocation(shaderProgram, 'uAlpha'),
-      beta: gl.getUniformLocation(shaderProgram, 'uBeta'),
-    },
-  };
-
-  initGL(gl);
-  initProgram(gl,programInfo);
+  const shader = new GoochShader(gl,[-5,0,0],[0.8,0.8,0.8],[0,0,0],0.6,0.6);
+  shader.setup(gl);
+  const programInfo = shader.getProgramInfo();
 
   const projectionMatrix = makePerspectiveMatrix(gl);
 
@@ -266,6 +146,13 @@ function main() {
   const axes = new OrientationAxes(1,base_link);
   axes.build(gl,programInfo);
 
+  const axes1 = new OrientationAxes(10,base_link,true);
+  axes1.build(gl,programInfo);
+
+  const voxel_link = new TransformLink(vec3.create(),base_link);
+  const testVoxel = new Voxel([1,1,1],[0,0,0],[1,0,0,1],voxel_link);
+  testVoxel.build(gl,programInfo);
+
   const links = [
     base0,
     link0,link1,link2,
@@ -274,7 +161,7 @@ function main() {
   ];
 
   const drawList = links.map((link)=>link);
-  // drawList.push(axes);
+  drawList.push(testVoxel);
 
   var active = true;
 
@@ -296,14 +183,16 @@ function main() {
         let response = JSON.parse(request.responseText);
         links.forEach((link)=>{
           link.update(response[link.id]);
-          link.rayCast([canvasX,-canvasY,0],combinedViewMatrix);
+          link.rayCast([canvasX,canvasY,0],combinedViewMatrix);
         });
         statusText.innerHTML = request.responseText;
         clearScreen(gl);
-        useShadow(gl,programInfo);
+        shader.useFull(gl,programInfo);
         draw(gl,programInfo,drawList,projectionMatrix,fromCamera);
-        noShadow(gl,programInfo);
+        shader.useBasic(gl,programInfo);
+        draw(gl,programInfo,[axes1],projectionMatrix,fromCamera);
         draw(gl,programInfo,[axes],projectionMatrix,guiSpace3D);
+        // draw(gl,programInfo,[mouseRayDrawer],projectionMatrix,mat4.create());
         mouseUpdate = false;
       },
     "onerror":(error)=>{
@@ -314,7 +203,7 @@ function main() {
 
   window.setInterval(()=>{
     if(active){
-      httpRequest("127.0.0.1:8002/status","GET","",requestCallbacks);
+      httpRequest(computeAddress+"/status","GET","",requestCallbacks);
     }
   },100);
 
@@ -325,9 +214,9 @@ function main() {
 
   //allow mouse click and drag to change the perspective
   var mouseHold = false;
-  const worldX = vec4.fromValues(1,0,0,0);
-  const worldY = vec4.fromValues(0,1,0,0);
-  const worldZ = vec4.fromValues(0,0,1,0);
+  const worldX = vec4.fromValues(1,0,0,1);
+  const worldY = vec4.fromValues(0,1,0,1);
+  const worldZ = vec4.fromValues(0,0,1,1);
   const dragFactorY = 2*PI/gl.canvas.clientHeight;
   const dragFactorX = 2*PI/gl.canvas.clientWidth;
   const origin = vec4.create();
@@ -339,6 +228,45 @@ function main() {
   var theta = 0;
   var rho = 0;
   var speedFactor = 2;
+
+  const mouseRay = vec4.create();
+  const invert = mat4.create();
+
+  const t0 = vec4.fromValues(0,0,0,1);
+  const t1 = vec4.fromValues(10,0,0,1);
+  const t2 = vec4.fromValues(0,10,0,1);
+
+  const tt0 = vec4.create();
+  const tt1 = vec4.create();
+  const tt2 = vec4.create();
+
+  const mouseRayCast = function(){
+    vec4.set(mouseRay,canvasX,canvasY,100,1);
+    mat4.invert(invert,projectionMatrix);
+    vec4.transformMat4(mouseRay,mouseRay,invert);
+    mouseRay[3] = 1;
+
+    vec4.transformMat4(tt0,t0,axes1.parent.getTransform());
+    vec4.transformMat4(tt1,t1,axes1.parent.getTransform());
+    vec4.transformMat4(tt2,t2,axes1.parent.getTransform());
+
+    vec4.transformMat4(tt0,tt0,fromCamera);
+    vec4.transformMat4(tt1,tt1,fromCamera);
+    vec4.transformMat4(tt2,tt2,fromCamera);
+
+    const translation = vec3.fromValues.apply(null,rayCast(mouseRay.slice(0,3),[tt0,tt1,tt2]));
+    const wst = vec4.fromValues(translation[0],translation[1],translation[2],1);
+
+    // transform from world space into planar space
+    const cameraInvert = mat4.create(); mat4.invert(cameraInvert,fromCamera);
+    const transInvert = mat4.create(); mat4.invert(transInvert,axes1.parent.getTransform());
+    vec4.transformMat4(wst,wst,cameraInvert);
+    vec4.transformMat4(wst,wst,transInvert);
+
+    const tmat = mat4.create();
+    mat4.fromTranslation(tmat,wst);
+    voxel_link.setTransform(tmat);
+  }
   // var mousePos = {x:0,y:0};
   canvas.onmousedown = (e)=>{
     mouseHold = true;
@@ -364,7 +292,7 @@ function main() {
       
       //the more intuitive control scheme
       theta += speedFactor*(Math.acos(canvasX) - Math.acos(sc[0]));
-      rho -= speedFactor*(Math.acos(canvasY) - Math.acos(sc[1]));
+      rho -= speedFactor*(Math.acos(-sc[1])-Math.acos(canvasY));
       mat4.fromRotation(rotationX,theta,worldY);
       mat4.fromRotation(rotationY,-rho,worldX);
       mat4.mul(rotationTotal,rotationX,rotationY);
@@ -373,7 +301,8 @@ function main() {
       // base_link.update();
     }
     canvasX = sc[0];
-    canvasY = sc[1];
+    canvasY = -sc[1];
+    mouseRayCast();
     // console.log("x: " + canvasX + " y: " + canvasY);
     mouseUpdate = true;
   };

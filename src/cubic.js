@@ -51,7 +51,8 @@ class Cubic{
     this.triangles = [];
     this.normals = [];
 
-    this.rayTest = false;
+    this.drawWireFrame = true;
+    this.drawSides = true;
   }
 
   build(gl,programInfo){
@@ -166,35 +167,12 @@ class Cubic{
     const nBot   = [0,-1,0];
 
     this.normals = [
-      nFront,
-      nFront,
-      nFront,
-      nFront,
-
-      nBack,
-      nBack,
-      nBack,
-      nBack,
-
-      nRight,
-      nRight,
-      nRight,
-      nRight,
-
-      nLeft,
-      nLeft,
-      nLeft,
-      nLeft,
-
-      nTop,
-      nTop,
-      nTop,
-      nTop,
-
-      nBot,
-      nBot,
-      nBot,
-      nBot,
+      nFront, nFront, nFront, nFront,
+      nBack,  nBack,  nBack,  nBack,
+      nRight, nRight, nRight, nRight,
+      nLeft,  nLeft,  nLeft,  nLeft,
+      nTop,   nTop,   nTop,   nTop,
+      nBot,   nBot,   nBot,   nBot,
     ].reduce((flat,nextComponent)=>{
       Array.prototype.push.apply(flat,nextComponent);return flat;
     },[]);
@@ -225,6 +203,7 @@ class Cubic{
     enableVertexFloatArrayBuffer(gl,this.buffers.colorBuffer,this.positions.colorBuffer,4);
 
     // draw everything
+    if(this.drawWireFrame)
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indexBuffer);
     {
       const offset = 0;
@@ -232,7 +211,7 @@ class Cubic{
       const type = gl.UNSIGNED_SHORT;
       gl.drawElements(gl.LINES,vertexCount,type,offset);
     }
-    if(!this.rayTest){
+    if(this.drawSides){
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.triangleBuffer);
       {
         const offset = 0;
@@ -242,7 +221,6 @@ class Cubic{
       }
     }
 
-    this.rayTest = false;
   }
 
   getTriangles(){
@@ -251,17 +229,22 @@ class Cubic{
 }
 
 class OrientationAxes{
-  constructor(size,parent){
+  constructor(size,parent,lines=false){
     this.buffers = [];
     this.positions = [];
     this.parent = parent;
     this.size = size;
+    this.lines = lines;
   }
   build(gl,programInfo){
     this.vertices = [ 0,0,0,  this.size,0,0,  0,this.size,0,  0,0,this.size ];
     this.buffers.vertexBuffer = createAndBindBuffer(gl,gl.ARRAY_BUFFER,new Float32Array(this.vertices),gl.STATIC_DRAW);
     // this.indices = [  0,1,  2,3,  4,5,  1,3,  1,5,  3,5 ];
-    this.indices = [  0,1,2, 0,1,3, 0,2,3];
+    if(this.lines){
+      this.indices = [  0,1,  0,2,  0,3,   ];
+    }else{
+      this.indices = [  0,1,2, 0,1,3, 0,2,3];
+    }
     this.buffers.indexBuffer  = createAndBindBuffer(gl,gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(this.indices),gl.STATIC_DRAW);
     // this.colors = [ 0,0,0,1,  1,0,0,1,  0,1,0,1,  0,1,0,1,  0,0,1,1,  0,0,1,1 ];
     this.colors = [ 0,0,0,1,  1,0,0,1,  0,1,0,1,   0,0,1,1 ];
@@ -283,10 +266,15 @@ class OrientationAxes{
     enableVertexFloatArrayBuffer(gl,this.buffers.colorBuffer,this.positions.colorBuffer,4);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indexBuffer);
     const offset = 0;
-    const vertexCount = 9;
     const type = gl.UNSIGNED_SHORT;
     gl.disable(gl.CULL_FACE);
-    gl.drawElements(gl.TRIANGLES,vertexCount,type,offset);
+    if(!this.lines){
+      const vertexCount = 9;
+      gl.drawElements(gl.TRIANGLES,vertexCount,type,offset);
+    } else{
+      const vertexCount = 6;
+      gl.drawElements(gl.LINES,vertexCount,type,offset);      
+    }
     gl.enable(gl.CULL_FACE);
   }
 }
