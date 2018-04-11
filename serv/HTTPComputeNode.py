@@ -25,7 +25,7 @@ class ControlNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
     # self.wfile.write("hello ack")
 
     # send the content-type,query string, and stream to processor object
-    content_type = self.headers.getheader('content-type',None);
+    content_type = self.headers.getheader('content-type',None)
     self.server.controller_args['post']['processor'](content_type,payload,self.wfile)
 
   def do_GET(self):
@@ -34,7 +34,7 @@ class ControlNodeAPI(SimpleHTTPServer.SimpleHTTPRequestHandler):
     self.end_headers()
 
     # send the content-type,query string, and stream to processor object
-    content_type = self.headers.getheader('content-type',None);
+    content_type = self.headers.getheader('content-type',None)
     self.server.controller_args['get']['processor'](self.path,content_type,self.wfile)
 
   def do_OPTIONS(self):
@@ -56,13 +56,13 @@ class ControlNode(SocketServer.TCPServer):
 
   def start(self):
     try:
-      is_live = True
+      self.is_live = True
       self.serve_forever()
     except KeyboardInterrupt:
       print("\nShutting down server...")
       self.shutdown()
       self.server_close()
-      is_live = False
+      self.is_live = False
 
   def running(self):
     return self.is_live

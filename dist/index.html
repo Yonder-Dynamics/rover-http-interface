@@ -1,43 +1,56 @@
 <!DOCTYPE HTML>
 <html lang="en">
-  <head>
-    <title>Rover Control Panel</title>
-    <link rel="tab icon" href="yonder.png">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" href="index.css">
-  </head>
-  <body>
-    <div class="container-fluid">
-      <h1>
-        Rover Control Panel
-      </h1>
+
+<head>
+  <title>Rover Control Panel</title>
+  <link rel="tab icon" href="yonder.png">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
+  <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+  <div class="container-fluid">
+    <h1 id="title">
+      Rover Control Panel
+    </h1>
+    <div>
       <canvas id="glCanvas" width="640" height="480"></canvas>
-      <div>
-        <span id="status-text"></span>
-      </div>
+      <video id="video" width="600" height="480" onclick="open_in_new_window('html_contents', 'Live Feed', 'location=1,status=1,toolbar=1,scrollbars=1,resizeable=1,width=800,height=550');" src="drive.mp4" autoplay="autoplay" loop="loop" muted="muted" />
+    </div>
+    <div>
+      <span id="status-text"></span>
+    </div>
+    <div class="input-group">
+      <span class="input-group-addon">Local Compute Node
+        <span class="glyphicon glyphicon-ok" id="server-status"></span>
+      </span>
+      <input type="text" id="compute-node-input" class="form-control">
+      <span class="input-group-btn">
+        <button id="compute-node-form" class="btn btn-default">Set</button>
+        <button id="reload-connection" class="btn btn-default">Reload</button>
+      </span>
+    </div>
+    <div class="row">
       <div class="input-group">
-        <span class="input-group-addon">Local Compute Node <span class="glyphicon glyphicon-ok" id="server-status"></span></span>
-        <input type="text" id="compute-node-input" class="form-control">
+        <span class="input-group-addon">X</span>
+        <input type="text" id="request-x" autocomplete="off" class="form-control" />
+        <span class="input-group-addon">Y</span>
+        <input type="text" id="request-y" autocomplete="off" class="form-control" />
+        <span class="input-group-addon">Z</span>
+        <input type="text" id="request-z" autocomplete="off" class="form-control" />
         <span class="input-group-btn">
-          <button id="compute-node-form" class="btn btn-default">Set</button>
-          <button id="reload-connection" class="btn btn-default">Reload</button>
+          <button id="compute-node-request" class="btn btn-default">Request</button>
+          <button id="compute-node-reset" class="btn btn-default">Reset</button>
         </span>
       </div>
-      <div class="row">
-        <div class="input-group">
-          <span class="input-group-addon">X</span>
-          <input type="text" id="request-x" autocomplete="off" class="form-control"/>
-          <span class="input-group-addon">Y</span>
-          <input type="text" id="request-y" autocomplete="off" class="form-control"/>
-          <span class="input-group-addon">Z</span>
-          <input type="text" id="request-z" autocomplete="off" class="form-control"/>
-          <span class="input-group-btn">
-            <button id="compute-node-request" class="btn btn-default">Request</button>
-            <button id="compute-node-reset" class="btn btn-default">Reset</button>
-          </span>
-        </div>
-      </div>
     </div>
-    <script src="bundle.js"></script>
-  </body>
+    <div id="html_contents" data-new-window>
+      <video controls style="width: 100%; height: 500px;" src="drive.mp4" autoplay="autoplay" loop="loop" muted="muted" />
+    </div>
+  </div>
+  <script src="bundle.js"></script>
+  <script src="popout.js"></script>
+</body>
+
 </html>

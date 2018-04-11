@@ -1,0 +1,23 @@
+/* prevents scrolling */
+html, body {
+    margin: 0; 
+    height: 100%; 
+    overflow: hidden;
+    background-color: #afbacc;
+} 
+
+#title {
+    font-family: fantasy;
+}
+
+.row {
+    margin-left: 0;
+}
+
+.input-group {
+    max-width: 800px;
+}
+
+[data-new-window] {
+    display: none;
+}
