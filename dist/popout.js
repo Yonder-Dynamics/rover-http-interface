@@ -1,6 +1,10 @@
 function open_in_new_window(id, new_page_title, features) {
     var new_window;
 
+    /* pauses video when opening in new window */
+    var video = document.getElementById('video');
+    video.pause();
+
     if (features !== undefined && features !== '') {
         new_window = window.open('', '_blank', features);
     }

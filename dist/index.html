@@ -15,8 +15,25 @@
       Rover Control Panel
     </h1>
     <div>
-      <canvas id="glCanvas" width="640" height="480"></canvas>
-      <video id="video" width="600" height="480" onclick="open_in_new_window('html_contents', 'Live Feed', 'location=1,status=1,toolbar=1,scrollbars=1,resizeable=1,width=800,height=550');" src="drive.mp4" autoplay="autoplay" loop="loop" muted="muted" />
+      <canvas id="glCanvas" width="550" height="480"></canvas>
+      <video id="video" width="550" height="480" onclick="open_in_new_window('html_contents', 'Live Feed', 'location=1,status=1,toolbar=1,scrollbars=1,resizeable=1,width=800,height=550');" src="drive.mp4" autoplay="autoplay" loop="loop" muted="muted" ></video>
+      <table border="1">
+        <tr>
+          <th>IMU Data</th>
+        </tr>
+        <tr>
+          <td align="center">X</td>
+          <td>1.0</td>
+        </tr>
+        <tr>
+          <td align="center">Y</td>
+          <td>1.0</td>
+        </tr>
+        <tr>
+          <td align="center">Z</td>
+          <td>1.0</td>
+        </tr>
+      </table>
     </div>
     <div>
       <span id="status-text"></span>
