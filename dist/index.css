@@ -21,3 +21,11 @@ html, body {
 [data-new-window] {
     display: none;
 }
+
+.p-1 {
+    padding: ($spacer * .25);
+}
+
+.p-3 {
+    padding: $spacer; 
+}

@@ -16,9 +16,13 @@
     </h1>
     <div>
       <div>
+        <div class="col-lg-4 row-lg-4">
       <canvas id="glCanvas" width="550" height="480"></canvas>
+        </div>
+	<div class="col-lg-6 row-lg-6" style="p-1">
       <video id="video" width="550" height="480" onclick="open_in_new_window('html_contents', 'Live Feed', 'location=1,status=1,toolbar=1,scrollbars=1,resizeable=1,width=800,height=550');" src="drive.mp4" autoplay="autoplay" loop="loop" muted="muted" ></video>
-      <div class="row-sm-3 p-5 mb-2 bg-primary text-white">This is a box</div>
+        </div>
+      <span class="row-sm-3 p-2 bg-primary text-white">This is a box</span>
       <table border="1">
         <tr>
           <th>IMU Data</th>
@@ -40,7 +44,7 @@
     <div>
       <span id="status-text"></span>
     </div>
-    <div class="input-group">
+    <div class="input-group col-sm-5 row">
       <span class="input-group-addon">Local Compute Node
         <span class="glyphicon glyphicon-ok" id="server-status"></span>
       </span>
@@ -50,7 +54,7 @@
         <button id="reload-connection" class="btn btn-default">Reload</button>
       </span>
     </div>
-    <div class="row">
+    <div class="col-sm-5 row">
       <div class="input-group">
         <span class="input-group-addon">X</span>
         <input type="text" id="request-x" autocomplete="off" class="form-control" />
