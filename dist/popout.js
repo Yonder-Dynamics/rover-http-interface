@@ -17,3 +17,12 @@ function open_in_new_window(id, new_page_title, features) {
         new_window.document.write('<!doctype html><html><head><title>' + new_page_title + '</title><meta charset="UTF-8" /></head><body>' + html_contents.innerHTML + '</body></html>');
     }
 }
+
+function checkFocus() {
+    if (document.hasFocus()) {
+        var video = document.getElementById('video');
+        video.play();
+    }
+}
+
+window.setInterval(checkFocus, 500);

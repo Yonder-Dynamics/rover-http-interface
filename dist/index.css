@@ -3,29 +3,63 @@ html, body {
     margin: 0; 
     height: 100%; 
     overflow: hidden;
-    background-color: #afbacc;
+    background-color: #4ea7f4;
 } 
 
 #title {
     font-family: fantasy;
+    color: black;
+}
+
+.panel {
+    position: relative;
+    display: inline-block;
+    background-color: transparent;
+    border: 1px solid #FFF;
+    border-radius: 5px;
+    height:100%;
+}
+
+.divider {
+    position: relative;
+    height: 1px;
+    width: 90%;
+    left: 5%;
+    margin: 2% 0% 2% 0%;
+}
+
+/* Arm Control */
+#left-panel {
+    left: 0px;
+    width:20%;
+    min-width: 350px;
+    text-align:center;
 }
 
 .row {
+    margin-top: 5px;
     margin-left: 0;
+    margin-right: 5px;
 }
 
-.input-group {
-    max-width: 800px;
+/* Feeds Section */
+#middle-panel {
+    top: 0%;
+    width: 59%;
+    min-width: 900px;
+    border-left: 1px solid #AAA;
+    border-right: 1px solid #AAA;
+    text-align: center;
 }
 
 [data-new-window] {
     display: none;
 }
 
-.p-1 {
-    padding: ($spacer * .25);
-}
-
-.p-3 {
-    padding: $spacer; 
+/* Sensor Data */
+#right-panel {
+    width:20%;
+    min-width: 350px;
+    padding: 5px;
+    text-align:center;
 }
