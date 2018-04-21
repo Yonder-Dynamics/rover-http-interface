@@ -22,7 +22,25 @@ function checkFocus() {
     if (document.hasFocus()) {
         var video = document.getElementById('video');
         video.play();
+    } else {
+        var video = document.getElementById('video');
+        video.pause();
     }
 }
 
 window.setInterval(checkFocus, 500);
+
+function swap() {
+
+    var config1 = document.getElementById('content');
+    var config2 = document.getElementById('content-2');
+
+    if(config1.hasAttribute('data-new-window')) {
+        config1.removeAttribute('data-new-window');
+        config2.setAttribute('data-new-window','');
+    } else {
+        config2.removeAttribute('data-new-window');
+        config1.setAttribute('data-new-window','');
+    }
+
+}

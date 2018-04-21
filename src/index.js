@@ -3,5 +3,6 @@
  */
 require('./canvas.js');
 require('./post_button.js');
-require('./computeServer.js')
+require('./computeServer.js');
+require('./config.js');
 

@@ -61,8 +61,8 @@ function initProgram(gl,programInfo){
 }
 
 function screenCoords(gl,event){
-  const x = (event.pageX - event.currentTarget.offsetLeft - gl.canvas.clientWidth/2 )/gl.canvas.clientWidth*2;
-  const y = (event.clientY - event.currentTarget.offsetTop - gl.canvas.clientHeight/2)/gl.canvas.clientHeight*2;
+  const x = (event.clientX - event.currentTarget.offsetLeft - gl.canvas.clientWidth)/gl.canvas.clientWidth*2;
+  const y = (event.clientY - event.currentTarget.offsetTop - gl.canvas.clientHeight)/gl.canvas.clientHeight*2;
   return [x,y];
 }
 
