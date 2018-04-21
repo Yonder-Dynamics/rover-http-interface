@@ -1,0 +1,12 @@
+#joystick-container-parent{
+    height:500px;
+    width:500px;
+    background-color: black;
+    position:relative;
+}
+
+#joystick-container{
+    position:absolute;
+    top:50%;
+    left:50%;
+}

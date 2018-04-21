@@ -203,13 +203,14 @@ class Cubic{
     enableVertexFloatArrayBuffer(gl,this.buffers.colorBuffer,this.positions.colorBuffer,4);
 
     // draw everything
-    if(this.drawWireFrame)
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indexBuffer);
-    {
-      const offset = 0;
-      const vertexCount = 24;
-      const type = gl.UNSIGNED_SHORT;
-      gl.drawElements(gl.LINES,vertexCount,type,offset);
+    if(this.drawWireFrame){
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indexBuffer);
+      {
+        const offset = 0;
+        const vertexCount = 24;
+        const type = gl.UNSIGNED_SHORT;
+        gl.drawElements(gl.LINES,vertexCount,type,offset);
+      }
     }
     if(this.drawSides){
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.triangleBuffer);
