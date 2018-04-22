@@ -41,6 +41,8 @@ class ControlProcessor:
         self.model.set_goal(payload["data"])
       elif "reset" in payload['action']:
         self.model.reset()
+      elif "joystick-drive" in payload['action']:
+        print("got some joystick data: {}".format(payload["data"]))
     else:
       wfile.write("content-type not recognized")
 

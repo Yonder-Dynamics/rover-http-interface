@@ -1,117 +1,99 @@
-import {mat4,vec4,vec3} from 'gl-matrix';
-import {GoochShader} from './GoochShader.js';
-import {Voxel} from './voxel.js';
-import {TransformLink} from './TransformLink.js';
+var computeAddress = "127.0.0.1:8002";
 
-function makePerspectiveMatrix(gl){
-    // Create a perspective matrix, a special matrix that is
-    // used to simulate the distortion of perspective in a camera.
-    // Our field of view is 45 degrees, with a width/height
-    // ratio that matches the display size of the canvas
-    // and we only want to see objects between 0.1 units
-    // and 100 units away from the camera.
+function httpRequest(addr,method,data,callbacks){
+    const shouldBeAsync = true;
   
-    const fieldOfView = 45 * Math.PI / 180;   // in radians
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    const zNear = 0.1;
-    const zFar = 100.0;
-    const projectionMatrix = mat4.create();
+    const request = new XMLHttpRequest();
   
-    // note: glmatrix.js always has the first argument
-    // as the destination to receive the result.
-    mat4.perspective(projectionMatrix,
-                     fieldOfView,
-                     aspect,
-                     zNear,
-                     zFar);
+    request.onload = ()=>callbacks.onload(request);
+    request.onerror = ()=>callbacks.onerror(request);
   
-    return projectionMatrix;
-}
-
-function initGL(gl){
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-    gl.clearDepth(1.0);                 // Clear everything
-}
-
-function clearScreen(gl){
-    // Clear the canvas before we start drawing on it.
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-}
-
-function initProgram(gl,programInfo){
-    // Tell WebGL to use our program when drawing
-    gl.useProgram(programInfo.program);
-}
-
-function screenCoords(gl,event){
-    const x = (event.pageX - event.currentTarget.offsetLeft - gl.canvas.clientWidth/2 )/gl.canvas.clientWidth*2;
-    const y = (event.clientY - event.currentTarget.offsetTop - gl.canvas.clientHeight/2)/gl.canvas.clientHeight*2;
-    return [x,y];
-}
-
-function draw(gl,programInfo,drawList,projection,fromCamera){
-    // Set the shader uniforms
-    gl.uniformMatrix4fv(
-        programInfo.uniformLocations.projectionMatrix,
-        false,
-        projection);
-
-    gl.uniformMatrix4fv(
-        programInfo.uniformLocations.fromCameraMatrix,
-        false,
-        fromCamera);
-
-    drawList.forEach((obj)=>obj.draw(gl));
-}
-
-function main(){
-    const canvas = document.querySelector("#glCanvas");
-    // Initialize the GL context
-    const gl = canvas.getContext("webgl");
-
-    // Only continue if WebGL is available and working
-    if (!gl) {
-        console.error("Unable to initialize WebGL. Your browser or machine may not support it.");
-        return;
-    }
-    initGL(gl);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    
-    const shader = new GoochShader(gl,[-5,0,0],[0.8,0.8,0.8],[0,0,0],0.6,0.6);
-    shader.setup(gl);
-
-    const programInfo = shader.getProgramInfo();
-    const projectionMatrix = makePerspectiveMatrix(gl);
-
-    var base_transform = mat4.create();
-    var fromCamera = mat4.create();
-    mat4.translate(fromCamera,fromCamera,[0,0.0,-20.0]);
-
-    const base_link = new TransformLink(base_transform);
-    const voxel_link = new TransformLink(mat4.create(),base_link);
-    const testVoxel = new Voxel([1,1,1],[0,0,0],[1,0,0,1],voxel_link);
-    testVoxel.build(gl,programInfo);
-
-
-    const drawList = [];
-    drawList.push(testVoxel);
-
-    const updateCanvas = function(){
-        clearScreen(gl);
-        shader.useFull(gl,programInfo);
-        //base_link.update();
-        draw(gl,programInfo,drawList,projectionMatrix,fromCamera);
-    }
-
-    window.setInterval(updateCanvas,100);
-}
-
-//main();
+    request.open(method, "http://"+addr, shouldBeAsync);
   
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    // request.setRequestHeader("goalv", "hello world");
+  
+    // Actually sends the request to the server.
+    request.send(data);
+}
+
 var options = {
     zone:document.getElementById("joystick-container"),
     mode:"static",
+    size:100,
 }
-var manager = require('nipplejs').create(options);
+const manager = require('nipplejs').create(options);
+const j0 = manager.get(0);
 
-window.setInterval(()=>{},100);
+console.log(j0);
+
+const callbacks = {
+    onload:()=>{ console.log("sent some data"); },
+    onerror:()=>{},
+};
+
+const joy_msg = {
+    updated:false,
+    axes:[0,0],
+    buttons:[],
+};
+
+// j0.on("move",(evt,data)=>{
+//     let angle = data.angle.radian;
+//     let mag = data.distance / (options.size/2);
+//     let x = mag*Math.cos(angle);
+//     let y = mag*Math.sin(angle);
+//     joy_msg.axes[0] = x;
+//     joy_msg.axes[1] = y;
+//     joy_msg.updated = true;
+//     // console.log("x: " + x + " y: " + y);
+// });
+
+j0.on("end",(evt,data)=>{
+    joy_msg.axes[0] = 0;
+    joy_msg.axes[1] = 0;
+    joy_msg.updated = true;
+    console.log("released joystick");
+});
+
+const pack_joy_msg = function(msg){
+    return JSON.stringify({
+        action:"joystick-drive",
+        data:JSON.stringify(msg),
+    });
+};
+
+window.setInterval(()=>{
+    if(joy_msg.updated){
+        httpRequest(computeAddress,"POST",pack_joy_msg(joy_msg),callbacks);
+        joy_msg.updated = false;
+    }
+},100);
+
+var pos;
+const getScroll = function () {
+    var x = (window.pageXOffset !== undefined) ?
+        window.pageXOffset :
+        (document.documentElement || document.body.parentNode || document.body)
+            .scrollLeft;
+
+    var y = (window.pageYOffset !== undefined) ?
+        window.pageYOffset :
+        (document.documentElement || document.body.parentNode || document.body)
+            .scrollTop;
+    return {
+        x: x,
+        y: y
+    };
+};
+var scroll = getScroll();
+
+manager.forEach(function (nipple) {
+    pos = nipple.el.getBoundingClientRect();
+    nipple.position = {
+        x: scroll.x + pos.left,
+        y: scroll.y + pos.top
+    };
+});
+
+// window.setInterval(()=>{},100);
