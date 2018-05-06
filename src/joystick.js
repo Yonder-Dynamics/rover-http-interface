@@ -1,4 +1,4 @@
-var computeAddress = window.location.hostname + ":8002";
+var computeAddress = window.location.hostname + ":8002/joystick";
 // var computeAddress = "192.168.4.1:8002";
 
 // left: 37, up: 38, right: 39, down: 40,
@@ -93,13 +93,6 @@ j0.on("move end",(evt,data)=>{
     }
 });
 
-// j0.on("end",(evt,data)=>{
-//     joy_msg.axes[0] = 0;
-//     joy_msg.axes[1] = 0;
-//     joy_msg.updated = true;
-//     console.log("released joystick");
-// });
-
 const pack_joy_msg = function(msg){
     return JSON.stringify({
         action:"joystick-drive",
@@ -143,5 +136,3 @@ manager.forEach(function (nipple) {
 disableScroll();
 
 console.log(window.location.hostname)
-
-// window.setInterval(()=>{},100);

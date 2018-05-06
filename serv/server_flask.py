@@ -13,6 +13,9 @@ from flask_cors import CORS
 from KinematicModel import KinematicModel
 from threading import Thread
 
+POST_SUCCESS    = "SUCC"
+POST_FAIL       = "ZUCC"
+
 class ControlProcessor:
     def __init__(self,model):
         self.model = model
@@ -75,7 +78,7 @@ def root():
     
     # Fail if no json in request
     if(not payload):
-        return "Zucc"
+        return POST_FAIL
         
     print("Payload: {}".format(payload))
     
@@ -87,7 +90,7 @@ def root():
         model.reset()
     
     # Success
-    return 'Succ'
+    return POST_SUCCESS
     
 @app.route('/status')
 def status():
@@ -95,6 +98,32 @@ def status():
     # return json.dumps(model.configuration)   
     return jsonify(model.configuration)     # Replacing Haggaart's json.dumps
                                             # Creates a Flask.Response() obj
+
+@app.route('/joystick',methods=['GET','POST'])
+def joystick():
+    # Load json as a dict
+    payload = request.json
+    
+    # Fail if no json in request
+    if(not payload):
+        return POST_FAIL
+        
+    print("Payload: {}".format(payload))
+    return POST_SUCCESS
+
+@app.route('/kill',methods=['POST'])
+def kill():
+    payload = request.json
+
+    if not payload:
+        return POST_FAIL
+
+    if payload.action == "unkill":
+        pass # unkill the motors
+    else:
+        pass # kill the motors
+
+    return POST_SUCCESS
 
 if(__name__ == '__main__'):
     PORT = int(sys.argv[1])
