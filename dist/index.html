@@ -1,6 +1,18 @@
 <!DOCTYPE HTML>
 <html lang="en">
 
+   <script type="text/javascript">
+     function toggle () {
+	  button_elem = document.getElementById("kill");
+    	  if (button_elem.innerHTML === "KILL") {
+           	button_elem.innerHTML = "UNKILL";
+    	  } else {
+    	  	button_elem.innerHTML = "KILL";
+	  }
+     }
+   </script>
+
+
 <head>
   <title>Rover Control Panel</title>
   <link rel="tab icon" href="yonder.png">
@@ -112,6 +124,15 @@
         <li><a href="#">ARM</a></li>  
       </ul>
     </div>
+
+    <!-- Rover Mortality Button -->
+    <div class="row-md-4">
+        <span class="input-group-btn ISHide">
+           
+          <button id="kill" class="btn btn-default" onclick="toggle()"> KILL </button>
+        </span> 
+    </div>
+
 
     <!-- Config 2 -->
     <div id="content-2" data-new-window>
