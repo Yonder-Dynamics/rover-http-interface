@@ -1,18 +1,6 @@
 <!DOCTYPE HTML>
 <html lang="en">
 
-   <script type="text/javascript">
-     function toggle () {
-	  button_elem = document.getElementById("kill");
-    	  if (button_elem.innerHTML === "KILL") {
-           	button_elem.innerHTML = "UNKILL";
-    	  } else {
-    	  	button_elem.innerHTML = "KILL";
-	  }
-     }
-   </script>
-
-
 <head>
   <title>Rover Control Panel</title>
   <link rel="tab icon" href="yonder.png">
@@ -33,7 +21,7 @@
     <div id="content">
 
       <!-- Left Panel -->
-      <div id="left-panel" class="panel col-lg-4 row-lg-4">
+      <div id="left-panel" class="panel col-lg-4 row-lg-8">
         <div class="row">
           <span class="input-group-addon" style="border-radius: 5px">Arm Input</span>
           <div class="input-group">
@@ -117,19 +105,17 @@
       <video controls style="width: 100%; height: 500px;" src="drive.mp4" autoplay="autoplay" loop="loop" muted="muted" />
     </div>
 
-    <!-- Control Indicator Pagnation-->
-    <div class="row-sm-4">
-      <ul class="pagination">
-        <li><a href="#">DRIVE</a></li>
-        <li><a href="#">ARM</a></li>  
-      </ul>
+    <!-- Control Indicator Button-->
+    <div class="row-md-4">
+        <span class="input-group-btn ISHide">
+          <button id="drive" class="btn btn-default" onclick="toggleDrive()"> DRIVE </button>
+        </span> 
     </div>
 
     <!-- Rover Mortality Button -->
     <div class="row-md-4">
-        <span class="input-group-btn ISHide">
-           
-          <button id="kill" class="btn btn-default" onclick="toggle()"> KILL </button>
+        <span class="input-group-btn">
+          <button id="kill" class="btn btn-default" onclick="toggleKill()"> KILL </button>
         </span> 
     </div>
 
@@ -157,7 +143,6 @@
 
   <!-- Scripts -->
   <script src="bundle.js"></script>
-
 </body>
 
 </html>
