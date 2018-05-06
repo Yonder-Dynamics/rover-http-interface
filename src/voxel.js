@@ -6,11 +6,12 @@ class Voxel extends Cubic{
     super(size[0],size[1],size[2]);
     this.color = color;
     this.drawWireFrame = false;
+    this.drawSides = true;
     this.transform = mat4.create(); mat4.fromTranslation(this.transform,position);
     this.parent = parent;
     this.parent.addChild(this);
     this.worldSpaceTransform = mat4.create();
-    this.positions = [];
+    this.positions = {};
 
     this.update();
   }
