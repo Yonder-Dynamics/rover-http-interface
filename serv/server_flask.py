@@ -1,10 +1,42 @@
+#!/usr/bin/env python2.7
+"""
+@author Alex Haggart, Simon Fong
+@email ?, simonfong6@gmail.com
+"""
+
 import sys
 import json
 import numpy as np
 import time
-from flask import Flask, request, session, g
+from flask import Flask, request, session, g, jsonify
+from flask_cors import CORS
 from KinematicModel import KinematicModel
 from threading import Thread
+
+class ControlProcessor:
+    def __init__(self,model):
+        self.model = model
+        self.running = lambda: True
+
+    def start(self):
+        thread = Thread(group=None,target=self.update_configuration)
+        thread.start()
+        return thread
+
+    def update_configuration(self):
+        last_print = 0
+        while self.running():
+            if not self.model.configured():
+                self.model.update()
+        # if time.time() - last_print > 1:
+        #   last_print = time.time()
+        #   print(self.model.end_affector)
+        print("Processing thread closing...")
+
+    def kill(self):
+        self.running = lambda: False
+
+
 
 precision=0.001
 
@@ -26,21 +58,59 @@ joint_map = [
 
 model = KinematicModel(start_configuration,joint_map,precision)
 
-app = Flask(__name__) # create the application instance :)
+app = Flask(__name__)   # Create the application instance :)
+CORS(app)               # Allow CORS (Cross Origin Requests)
 
 @app.route('/', methods=['GET', 'POST'])
 def root():
-    return None
+    """
+    Case: {u'action': u'set_goal', u'data': [1, 1, 1]}
+        Does inverse kinematics to get to goal.
+        
+    Case: {u'action': u'reset'}
+        Resets arm to original location.
+    """
+    # Load json as a dict
+    payload = request.json
+    
+    # Fail if no json in request
+    if(not payload):
+        return "Zucc"
+        
+    print("Payload: {}".format(payload))
+    
+    if("set_goal" in payload['action']):
+        print("setting goal to: {}".format(payload['data']))
+        model.set_goal(payload["data"])
+    elif("reset" in payload['action']):
+        print("Resetting arm to original location.")
+        model.reset()
+    
+    # Success
+    return 'Succ'
     
 @app.route('/status')
 def status():
-    return json.dumps(model.configuration)    
+    
+    # return json.dumps(model.configuration)   
+    return jsonify(model.configuration)     # Replacing Haggaart's json.dumps
+                                            # Creates a Flask.Response() obj
 
 if(__name__ == '__main__'):
     PORT = int(sys.argv[1])
     
 
+    node = ControlProcessor(model)
+    thread = node.start()
     
-    
-    
+    # Will run on http://localhost:PORT
+    # OR IPADDRESS:PORT
+    print("Listening on http://localhost:{}".format(PORT))
     app.run(host='0.0.0.0', port=PORT, threaded=True)
+    
+    node.kill()
+    print("Thread killed")
+    
+    
+    
+    
