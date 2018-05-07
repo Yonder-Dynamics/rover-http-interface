@@ -5,6 +5,7 @@ Need:
 ROS
 Node.js
 Inverse Kinematics library (python)
+Flask (python)
 WebGL (run in chrome)
 
 In Chrome:
@@ -15,7 +16,7 @@ go to port (localhost:8000)
 
 1. npm install
 2. cd serv/
-3. ./kinematics_server.py 8002
+3. ./server_flask.py 8002
 4. (In new terminal) npm start
 
 ## TODO:
