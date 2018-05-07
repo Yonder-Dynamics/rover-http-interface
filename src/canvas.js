@@ -149,7 +149,7 @@ function main() {
   const axes1 = new OrientationAxes(10,base_link,true);
   axes1.build(gl,programInfo);
 
-  const voxel_link = new TransformLink(vec3.create(),base_link);
+  const voxel_link = new TransformLink(mat4.create(),base_link);
   const testVoxel = new Voxel([1,1,1],[0,0,0],[1,0,0,1],voxel_link);
   testVoxel.build(gl,programInfo);
 

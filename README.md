@@ -1,16 +1,16 @@
 # rover-http-interface
 
-Need:
-
-ROS
-Node.js
-Inverse Kinematics library (python)
-Flask (python)
-WebGL (run in chrome)
+##Need:
 
 In Chrome:
 
 go to port (localhost:8000)
+
+- ROS
+- Node.js (npm)
+- ikpy (inverse kinematics library) (python)
+- WebGL-compliant browser (tested on chrome)
+
 
 ## Commands:
 
