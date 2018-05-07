@@ -107,6 +107,8 @@ def joystick():
     # Fail if no json in request
     if(not payload):
         return POST_FAIL
+
+    # do some stuff with the joystick data depending on the drive type
         
     print("Payload: {}".format(payload))
     return POST_SUCCESS
@@ -118,10 +120,12 @@ def kill():
     if not payload:
         return POST_FAIL
 
-    if payload.action == "unkill":
+    if payload['action'] == "unkill":
+        print("unkilling motors")
         pass # unkill the motors
     else:
-        pass # kill the motors
+        print("killing motors")
+        pass # kill the motors: pass invalid data to motor topic
 
     return POST_SUCCESS
 

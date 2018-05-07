@@ -21,7 +21,7 @@
     <div id="content">
 
       <!-- Left Panel -->
-      <div id="left-panel" class="panel col-lg-4 row-lg-8">
+      <div id="left-panel" class="panel col-lg-4">
         <div class="row">
           <span class="input-group-addon" style="border-radius: 5px">Arm Input</span>
           <div class="input-group">
@@ -57,9 +57,9 @@
       </div>
 
       <!-- Middle Panel -->
-      <div id="middle-panel" class="panel col-lg-6 row-lg-6">
-        <canvas id="glCanvas" width="500" height="480"></canvas>
-        <video id="video" width="500" height="480" onclick="open_in_new_window('html_contents', 'Live Feed', 'location=1,status=1,toolbar=1,scrollbars=1,resizeable=1,width=800,height=550');"
+      <div id="middle-panel" class="panel col-lg-6">
+        <canvas id="glCanvas" width="250" height="240"></canvas>
+        <video id="video" width="250" height="240" onclick="open_in_new_window('html_contents', 'Live Feed', 'location=1,status=1,toolbar=1,scrollbars=1,resizeable=1,width=800,height=550');"
           src="drive.mp4" autoplay="autoplay" loop="loop" muted="muted"></video>
       </div>
 
@@ -108,14 +108,14 @@
     <!-- Control Indicator Button-->
     <div class="row-md-4">
         <span class="input-group-btn ISHide">
-          <button id="drive" class="btn btn-default" onclick="toggleDrive()"> DRIVE </button>
+          <button id="drive" class="btn btn-default" onclick="toggleDrive()">DRIVE</button>
         </span> 
     </div>
 
     <!-- Rover Mortality Button -->
     <div class="row-md-4">
         <span class="input-group-btn">
-          <button id="kill" class="btn btn-default" onclick="toggleKill()"> KILL </button>
+          <button id="kill" class="btn btn-default" onclick="toggleKill()">KILL</button>
         </span> 
     </div>
 

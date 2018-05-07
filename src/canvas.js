@@ -18,6 +18,8 @@ import {Voxel} from './voxel.js';
 
 import {GoochShader} from './GoochShader.js';
 
+const getScroll = require("./getScroll.js");
+
 const PI = 3.14159265359
 
 function makePerspectiveMatrix(gl){
@@ -61,8 +63,15 @@ function initProgram(gl,programInfo){
 }
 
 function screenCoords(gl,event){
-  const x = (event.clientX - event.currentTarget.offsetLeft - gl.canvas.clientWidth * (13.0 / 10.0))/gl.canvas.clientWidth*2;
-  const y = (event.clientY - event.currentTarget.offsetTop - gl.canvas.clientHeight * (3.0 / 4.0))/gl.canvas.clientHeight*2;
+  // const x = (event.clientX - event.currentTarget.offsetLeft - gl.canvas.clientWidth * (13.0 / 10.0))/gl.canvas.clientWidth*2;
+  // const y = (event.clientY - event.currentTarget.offsetTop - gl.canvas.clientHeight * (3.0 / 4.0))/gl.canvas.clientHeight*2;
+  let elem_pos = event.currentTarget.getBoundingClientRect();
+  let mouse_pos = {
+    x: event.clientX,
+    y: event.clientY,
+  }
+  const x = (mouse_pos.x - elem_pos.x)/(gl.canvas.clientWidth/2)  - 1;
+  const y = (mouse_pos.y - elem_pos.y)/(gl.canvas.clientHeight/2) - 1;
   return [x,y];
 }
 

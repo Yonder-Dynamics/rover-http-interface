@@ -1,3 +1,5 @@
+const getScroll = require("./getScroll.js");
+
 var computeAddress = window.location.hostname + ":8002/joystick";
 // var computeAddress = "192.168.4.1:8002";
 
@@ -108,21 +110,6 @@ window.setInterval(()=>{
 },100);
 
 var pos;
-const getScroll = function () {
-    var x = (window.pageXOffset !== undefined) ?
-        window.pageXOffset :
-        (document.documentElement || document.body.parentNode || document.body)
-            .scrollLeft;
-
-    var y = (window.pageYOffset !== undefined) ?
-        window.pageYOffset :
-        (document.documentElement || document.body.parentNode || document.body)
-            .scrollTop;
-    return {
-        x: x,
-        y: y
-    };
-};
 var scroll = getScroll();
 
 manager.forEach(function (nipple) {
@@ -133,6 +120,6 @@ manager.forEach(function (nipple) {
     };
 });
 
-disableScroll();
+// disableScroll();
 
-console.log(window.location.hostname)
+// console.log(window.location.hostname)
