@@ -1,5 +1,6 @@
 
 var computeAddress = "127.0.0.1:8002";
+//var computeAddress = "100.80.228.189:8002";
 var tx2 = "100.80.231.5:8002";
 
 const inputElem = document.getElementById("compute-node-input")
@@ -44,6 +45,10 @@ function setLocalComputeAddress(e){
         // });
     }
 }
+
+//document.cookie = computeAddress;
+//function setCookie("",computeAddress) {}
+//function getCookie(computeAddress) {} 
 
 function requestNewPosition(e){
   e.stopPropagation();

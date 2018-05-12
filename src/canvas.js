@@ -6,17 +6,18 @@
  */
 import {mat4,vec4,vec3} from 'gl-matrix';
 import {Link} from './link.js';
-import {OrientationAxes} from './cubic.js';
-import {httpRequest} from './computeServer.js';
 import {TransformLink} from './TransformLink.js';
-
+import {OrientationAxes} from './cubic.js';
 import {rayCast} from './VectorMath.js';
+import {httpRequest} from './computeServer.js';
 
 import {computeAddress} from './computeServer.js';
 
 import {Voxel} from './voxel.js';
 
 import {GoochShader} from './GoochShader.js';
+
+const statusCallback = require('./odomDisplay.js');
 
 const getScroll = require("./getScroll.js");
 
@@ -190,6 +191,7 @@ function main() {
   const requestCallbacks = {
     "onload":(request)=>{
         let response = JSON.parse(request.responseText);
+        statusCallback(response);
         links.forEach((link)=>{
           link.update(response[link.id]);
           link.rayCast([canvasX,canvasY,0],combinedViewMatrix);

@@ -1,4 +1,5 @@
 /* prevents scrolling */
+/*
 html, body {
     margin: 0; 
     height: 100%; 
@@ -27,6 +28,9 @@ html, body {
     left: 5%;
     margin: 2% 0% 2% 0%;
 }
+ */
+
+
 
 /* Arm Control */
 #left-panel {
@@ -46,9 +50,7 @@ html, body {
 #middle-panel {
     top: 0%;
     width: 59%;
-    min-width: 900px;
-    border-left: 1px solid #AAA;
-    border-right: 1px solid #AAA;
+    min-width: 700px;
     text-align: center;
 }
 
@@ -58,8 +60,26 @@ html, body {
 
 /* Sensor Data */
 #right-panel {
-    width:20%;
+    width:40%;
     min-width: 350px;
     padding: 5px;
-    text-align:center;
+    text-align: center;
+}
+
+#GPS {
+    width: 20%;
+    min-width: 350px;
+    text-align: left;
+}
+
+#IMU {
+    width: 20%;
+    min-width: 350px;
+    text-align: left;
+}
+
+#ASS {
+    width: 20%;
+    min-width: 350px;
+    text-align: left;
 }
