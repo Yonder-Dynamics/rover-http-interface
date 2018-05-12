@@ -13,8 +13,13 @@ from flask_cors import CORS
 from KinematicModel import KinematicModel
 from threading import Thread
 
+import rospy
+from sensor_msgs.msg import Imu
+
 POST_SUCCESS    = "SUCC"
 POST_FAIL       = "ZUCC"
+
+running = True
 
 class ControlProcessor:
     def __init__(self,model):
@@ -39,6 +44,34 @@ class ControlProcessor:
     def kill(self):
         self.running = lambda: False
 
+class IMUFetcher:
+    def __init__(self):
+        self.data = None
+        rospy.init_node('imu_serving',anonymous=True)
+
+        def callback(msg):
+            #print(msg.linear_acceleration.x)
+            self.data = msg
+
+
+        rospy.Subscriber('/imu/data',Imu,callback)
+
+    def add_imu_data(self,payload):
+        if self.data:
+            payload["imu"] = self.format_imu_data(self.data)
+
+    def format_imu_data(self,data):
+        return {
+            "linear_acceleration":[
+                data.linear_acceleration.x,
+                data.linear_acceleration.y,
+                data.linear_acceleration.z],
+            "orientation":[
+                data.orientation.x,
+                data.orientation.y,
+                data.orientation.z,
+                data.orientation.w],
+        }
 
 
 precision=0.001
@@ -58,6 +91,8 @@ joint_map = [
     "joint1",
     "joint2"
 ]
+
+imu_fetch = IMUFetcher()
 
 model = KinematicModel(start_configuration,joint_map,precision)
 
@@ -92,11 +127,13 @@ def root():
     # Success
     return POST_SUCCESS
     
-@app.route('/status')
+@app.route('/status',methods=['GET'])
 def status():
     
     # return json.dumps(model.configuration)   
-    return jsonify(model.configuration)     # Replacing Haggaart's json.dumps
+    payload = model.configuration
+    imu_fetch.add_imu_data(payload)
+    return jsonify(payload)     # Replacing Haggaart's json.dumps
                                             # Creates a Flask.Response() obj
 
 @app.route('/joystick',methods=['GET','POST'])
