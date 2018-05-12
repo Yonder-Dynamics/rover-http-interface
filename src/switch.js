@@ -9,7 +9,7 @@ var toggleKill = function(endpoint) {
   if (button_elem.innerHTML === "KILL") {
     button_elem.innerHTML = "UNKILL";
     endpoint.request("POST",JSON.stringify({action:"kill"}))
-    // button_elem.innerHTML = '#26C040';
+       property.style.BackgroundColor = '#26C040';
   } else {
     button_elem.innerHTML = "KILL";
     endpoint.request("POST",JSON.stringify({action:"unkill"}))

@@ -18,6 +18,8 @@ import {Voxel} from './voxel.js';
 
 import {GoochShader} from './GoochShader.js';
 
+const statusCallback = require('./imu.js');
+
 const getScroll = require("./getScroll.js");
 
 const PI = 3.14159265359
@@ -190,6 +192,7 @@ function main() {
   const requestCallbacks = {
     "onload":(request)=>{
         let response = JSON.parse(request.responseText);
+        statusCallback(response);
         links.forEach((link)=>{
           link.update(response[link.id]);
           link.rayCast([canvasX,canvasY,0],combinedViewMatrix);
