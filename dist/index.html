@@ -2,161 +2,139 @@
 <html lang="en">
 
 <head>
-  <title>Rover Control Panel</title>
   <link rel="tab icon" href="yonder.png">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
     crossorigin="anonymous">
   <link rel="stylesheet" href="index.css">
 </head>
 
-<body>
+<body bgcolor="grey">
   <div class="container-fluid">
 
     <div id="title">
-      <h1 style="text-align: center">Rover Control Panel</h1>
-      <button id="config-1" class="btn btn-default" onclick="swap()">Config 1</button>
+      <h1 style="text-align: left">Rover Control Panel</h1>
     </div>
 
     <!-- Main Config -->
-    <div id="content">
-
-    <!-- Control Indicator Button-->
-    <div class="row-sm-1">
-        <span class="input-group-btn ISHide">
-          <button id="drive" class="btn btn-default" onclick="toggleDrive()">DRIVE</button>
-        </span> 
-    </div>
-
-      <!-- Feeds Panel -->
-      <div id="middle-panel" class="panel row-sm-4 col-sm-2">
-        <canvas id="glCanvas" width="250" height="240"></canvas>
-        <video id="video" width="250" height="240" onclick="open_in_new_window('html_contents', 'Live Feed', 'location=1,status=1,toolbar=1,scrollbars=1,resizeable=1,width=800,height=550');"
-          src="drive.mp4" autoplay="autoplay" loop="loop" muted="muted"></video>
-      </div>
-  
-    <!-- blank space -->
-    <div class="col-sm-4 row-sm-6"> </div>
-
-    <!-- Rover Mortality Button -->
-    <div class="row-sm-1">
-        <span class="input-group-btn">
-          <button id="kill" class="btn btn-default" onclick="toggleKill()">KILL</button>
-        </span> 
-    </div>
-
-      <!-- Right Panel -->
-      <div id="right-panel" class="panel col-sm-4">
-
-       <div class="panel row-sm-3 col-sm-3">
-        <!-- GPS Data Box -->
-        <span id="GPS" class="input-group-addon" style="border-radius: 5px">GPS</span>
-        <div class="input-group">
-          <span class="input-group-addon">X</span>
-          <input type="text" id="gps-x" autocomplete="off" class="form-control" />
+    <div class="row bg-primary" id="content">
+   
+      <!-- a button -->
+       <div class="row" id="killButton">
+           <div class="span12">
+            <!-- Rover mortality button -->       
+            <div class="col-sm-1 bg-danger">
+              <span class="input-group-btn">
+                <button id="kill" class="btn btn-default" onclick="toggleKill()">KILL</button>
+              </span> 
+            </div>
+           </div>
+       </div>
+         
+      <!-- Video Feeds-->
+        <div class="row" id="Video feeds">  
+          <div class="span12 bg-info">
+            <canvas id="glCanvas" width="250" height="240"></canvas>
+            <video id="video" width="250" height="240" onclick="open_in_new_window('html_contents', 'Live Feed', 'location=1,status=1,toolbar=1,scrollbars=1,resizeable=1,width=800,height=550');"
+          src="drive.mp4" autoplay="autoplay" loop="loop" muted="muted"></video> 
+          </div>
         </div>
-        <div class="input-group">
-          <span class="input-group-addon">Y</span>
-          <input type="text" id="gps-y" autocomplete="off" class="form-control" />
-        </div>
-        <div class="input-group">
-          <span class="input-group-addon">Z</span>
-          <input type="text" id="gps-z" autocomplete="off" class="form-control" />
-        </div>
-      </div>
 
-        <div class="divider"></div>
+      <!-- another button -->
+       <div class="row" id="controlButton">
+           <div class="span12">
+            <!-- Drive/arm button -->       
+            <div class="col-sm-1 bg-success">
+              <span class="input-group-btn ISHide">
+                <button id="drive" class="btn btn-default" onclick="toggleDrive()">DRIVE</button>
+              </span> 
+            </div>
+           </div>
+       </div>
+       
+      <!-- Odometry Display Tables -->
+        <div class="row bg-info" id="odomDisplays">
+        <div class="span12"> 
 
-      <div class="panel row-sm-3 col-sm-3">     
-        <!-- IMU Data Box -->
-        <span id="IMU" class="input-group-addon" style="border-radius: 5px">IMU</span>
-        <div class="input-group">
-          <span class="input-group-addon">X</span>
-          <input type="text" id="imu-x" autocomplete="off" class="form-control" />
-        </div>
-        <div class="input-group">
-          <span class="input-group-addon">Y</span>
-          <input type="text" id="imu-y" autocomplete="off" class="form-control" />
-        </div>
-        <div class="input-group">
-          <span class="input-group-addon">Z</span>
-          <input type="text" id="imu-z" autocomplete="off" class="form-control" />
-        </div>
-      </div>
+          <!-- GPS display -->
+          <div class="col-sm-4"> 
+            <span id="GPS" class="input-group-addon" style="border-radius: 5px">GPS</span>
+              <div class="input-group">
+                <span class="input-group-addon">X</span>
+                <input type="text" id="gps-x" autocomplete="off" class="form-control" />
+              </div>
+              <div class="input-group">
+                <span class="input-group-addon">Y</span>
+                <input type="text" id="gps-y" autocomplete="off" class="form-control" />
+              </div>
+              <div class="input-group">
+                <span class="input-group-addon">Z</span>
+                <input type="text" id="gps-z" autocomplete="off" class="form-control" />
+              </div>
+          </div>
 
-        <div class="divider"></div>
+          <!-- IMU display -->   
+          <div class="col-sm-4">
+            <span id="IMU" class="input-group-addon" style="border-radius: 5px">IMU</span>
+              <div class="input-group">
+                 <span class="input-group-addon">X</span>
+                 <input type="text" id="imu-x" autocomplete="off" class="form-control" />
+              </div>
+              <div class="input-group">
+                 <span class="input-group-addon">Y</span>
+                 <input type="text" id="imu-y" autocomplete="off" class="form-control" />
+              </div>
+              <div class="input-group">
+                <span class="input-group-addon">Z</span>
+                <input type="text" id="imu-z" autocomplete="off" class="form-control" />
+              </div>
+          </div>
 
-      <div class="panel row-sm-3 col-sm-3">
-        <!-- ASS Data Box -->
-        <span id="ASS" class="input-group-addon" style="border-radius: 5px">ASS</span>
-        <div class="input-group">
-          <span class="input-group-addon">X</span>
-          <input type="text" id="ass-x" autocomplete="off" class="form-control" />
+          <!-- ASS display -->
+          <div class="col-sm-4">
+            <span id="ASS" class="input-group-addon" style="border-radius: 5px">ASS</span>
+            <div class="input-group">
+              <span class="input-group-addon">X</span>
+              <input type="text" id="ass-x" autocomplete="off" class="form-control" />
+            </div>
+           <div class="input-group">
+              <span class="input-group-addon">Y</span>
+              <input type="text" id="ass-y" autocomplete="off" class="form-control" />
+           </div>
+           <div class="input-group">
+              <span class="input-group-addon">Z</span>
+              <input type="text" id="ass-z" autocomplete="off" class="form-control" />
+           </div>
+          </div>
+        </div>  
         </div>
-        <div class="input-group">
-          <span class="input-group-addon">Y</span>
-          <input type="text" id="ass-y" autocomplete="off" class="form-control" />
-        </div>
-        <div class="input-group">
-          <span class="input-group-addon">Z</span>
-          <input type="text" id="ass-z" autocomplete="off" class="form-control" />
-        </div>
-      </div>
- 
-   </div>
-
-
-    <!-- Expand video into new window -->
-    <div id="html_contents" data-new-window>
-      <video controls style="width: 100%; height: 500px;" src="drive.mp4" autoplay="autoplay" loop="loop" muted="muted" />
-    </div>
-
-
-      <!-- Local Compute Node Display -->
-      <div id="left-panel" class="panel row-sm-4">
-          <span class="input-group-btn">
-            <button id="compute-node-request" class="btn btn-default">Request</button>
-            <button id="compute-node-reset" class="btn btn-default">Reset</button>
-          </span>
-        </div>
+     
+      <!-- Local Compute Node -->  
+        <div class="row bg-info">
+          <div class="span12">
+            <span class="input-group-btn">
+              <button id="compute-node-request" class="btn btn-default">Request</button>
+              <button id="compute-node-reset" class="btn btn-default">Reset</button>
+            </span>
         
-        <div class="input-group col">
-          <span class="input-group-addon">Local Compute Node
-            <span class="glyphicon glyphicon-ok" id="server-status"></span>
-          </span>
-          <input type="text" id="compute-node-input" class="form-control">
+          <div class="input-group col">
+            <span class="input-group-addon">Local Compute Node
+              <span class="glyphicon glyphicon-ok" id="server-status"></span>
+            </span>
+              <input type="text" id="compute-node-input" class="form-control">
+            <span class="input-group-btn">
+              <button id="compute-node-form" class="btn btn-default">Set</button>
+              <button id="reload-connection" class="btn btn-default">Reload</button>
+            </span>
+          <div>
+            <span id="status-text"></span>
+          </div> 
         </div>
-        <span class="input-group-btn">
-          <button id="compute-node-form" class="btn btn-default">Set</button>
-          <button id="reload-connection" class="btn btn-default">Reload</button>
-        </span>
-        <div>
-          <span id="status-text"></span>
-        </div>
-      </div>
 
-    <!-- Config 2 -->
-    <div id="content-2" data-new-window>
-      <!-- Left Panel -->
-      <div id="left-panel" class="panel col-sm-4 row-sm-4">
-        <span> Hi I am config 2 </span>
-      </div>
-
-      <!-- Middle Panel -->
-      <div id="middle-panel" class="panel col-sm-6 row-sm-6">
-        <span> Testing 1 2 3 </span>
-      </div>
-
-      <!-- Right Panel -->
-      <div id="right-panel" class="panel">
-        <span> Mission Log Box </span>
-      </div>
     </div>
-  </div>
 
-  </div>
+</body>
 
   <!-- Scripts -->
   <script src="bundle.js"></script>
-</body>
 
 </html>
